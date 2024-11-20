@@ -84,7 +84,6 @@ const ExercisePage = () => {
         }
     };
 
-    /*************  ✨ Codeium Command 🌟  *************/
     const updateExercise = async (e) => {
         e.preventDefault();
         try {
@@ -97,13 +96,6 @@ const ExercisePage = () => {
             formData.append('exercise', JSON.stringify(exerciseData));
             if (selectedImage) {
                 formData.append('uploaded_image', selectedImage);
-                await axios.put(
-                    `/api/exercises/${editingExercise.id}/image`,
-                    formData,
-                    {
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                    }
-                );
             }
 
             await axios.put(
@@ -121,9 +113,6 @@ const ExercisePage = () => {
             console.error('Error updating exercise:', error);
         }
     };
-
-
-    /******  d1e1c771-3088-470e-83a4-95e136fe4947  *******/
 
     const deleteExercise = async (exerciseId) => {
         try {
