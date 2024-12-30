@@ -1,6 +1,8 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import axios from 'axios';
+import { Login } from './auth/login';
+import { Signup } from './auth/signup';
 import HomePage from './components/HomePage';
 import FoldersPage from './components/FoldersPage';
 import SectionPage from './components/SectionPage';
@@ -8,6 +10,16 @@ import ExercisePage from './components/ExercisePage';
 import ErrorPage from './components/ErrorPage';
 
 const router = createBrowserRouter([
+  {
+    path: '/login',
+    element: <Login />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: '/signup',
+    element: <Signup />,
+    errorElement: <ErrorPage />
+  },
   {
     path: '/',
     element: <HomePage />,

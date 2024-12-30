@@ -10,8 +10,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://workout-tracker-be-an35.onrender.com/api/$1"
+      "source": "/api/.*",
+      "destination": "http://localhost:8000/:path*"
     }
   ]
 }
