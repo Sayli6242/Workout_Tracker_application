@@ -1,13 +1,29 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import axios from 'axios';
-import { Login } from './auth/login';
-import { Signup } from './auth/signup';
+import { AuthProvider, useAuth } from '../src/components/auth/AuthContext';  // Import both AuthProvider and useAuth
+import Login from '../src/components/auth/Login';
+import Register from '../src/components/auth/Register'
 import HomePage from './components/HomePage';
 import FoldersPage from './components/FoldersPage';
 import SectionPage from './components/SectionPage';
 import ExercisePage from './components/ExercisePage';
 import ErrorPage from './components/ErrorPage';
+
+// Create a protected route wrapper component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
 
 const router = createBrowserRouter([
   {
@@ -16,28 +32,44 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
   {
-    path: '/signup',
-    element: <Signup />,
+    path: '/register',
+    element: <Register />,
     errorElement: <ErrorPage />
   },
   {
-    path: '/',
-    element: <HomePage />,
+    path: '/Home',
+    element: (
+      <ProtectedRoute>
+        <HomePage />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorPage />
   },
   {
     path: '/folders',
-    element: <FoldersPage />,
+    element: (
+      <ProtectedRoute>
+        <FoldersPage />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorPage />
   },
   {
     path: '/folders/:folderId/sections',
-    element: <SectionPage />,
+    element: (
+      <ProtectedRoute>
+        <SectionPage />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorPage />
   },
   {
     path: '/folders/:folderId/sections/:sectionId/exercises',
-    element: <ExercisePage />,
+    element: (
+      <ProtectedRoute>
+        <ExercisePage />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorPage />
   },
   {
@@ -52,9 +84,11 @@ const router = createBrowserRouter([
 
 const App = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <RouterProvider router={router} />
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen bg-gray-50">
+        <RouterProvider router={router} />
+      </div>
+    </AuthProvider>
   );
 };
 
