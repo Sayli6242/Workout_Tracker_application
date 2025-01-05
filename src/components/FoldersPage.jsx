@@ -60,7 +60,7 @@ const FoldersPage = () => {
         try {
             const response = await axios.post('/api/folders/', {
                 name: newFolderName,
-                description: newFolderDescription
+                // description: newFolderDescription
             }, {
                 headers: {
                     'Authorization': `Bearer ${session?.access_token}`
@@ -82,19 +82,30 @@ const FoldersPage = () => {
         try {
             const response = await axios.put(`/api/folders/${editingFolder.id}`, {
                 name: editingFolder.name,
-                description: editingFolder.description
+                // description: editingFolder.description  // Include description if your backend expects it
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${session?.access_token}`  // Add authorization header
+                }
             });
-            setFolders(folders.map(folder =>
-                folder.id === editingFolder.id
-                    ? { ...folder, ...editingFolder }
-                    : folder
-            ));
-            setIsEditModalOpen(false);
-            setEditingFolder(null);
+
+            if (response.data) {
+                setFolders(folders.map(folder =>
+                    folder.id === editingFolder.id
+                        ? { ...folder, ...response.data }  // Use response data instead of editingFolder
+                        : folder
+                ));
+                setIsEditModalOpen(false);
+                setEditingFolder(null);
+            }
         } catch (error) {
             console.error('Error updating folder:', error);
+            if (error.response?.status === 401) {
+                navigate('/login');  // Handle unauthorized access
+            }
         }
     };
+
 
     const deleteFolder = async (folderId) => {
         try {
