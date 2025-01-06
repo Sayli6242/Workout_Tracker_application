@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, ArrowLeft, Trash, X, Edit } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../components/auth/AuthContext';
 
 const SectionPage = () => {
     const { folderId } = useParams();
@@ -16,6 +17,7 @@ const SectionPage = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [selectedSection, setSelectedSection] = useState(null);
+    const { session } = useAuth();
 
     useEffect(() => {
         fetchFolderDetails();
@@ -24,7 +26,7 @@ const SectionPage = () => {
 
     const fetchFolderDetails = async () => {
         try {
-            const response = await axios.get(`/api/folders/${folderId}`);
+            const response = await axios.get(`/api/folders/${folderId}/`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
             const folderName = response.data[0].name;
             setFolderName(folderName);
         } catch (error) {
@@ -34,7 +36,7 @@ const SectionPage = () => {
 
     const fetchSections = async () => {
         try {
-            const response = await axios.get(`/api/folders/${folderId}/sections`);
+            const response = await axios.get(`/api/folders/${folderId}/sections`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
             console.log('fetched sections:', response.data);
             setSections(response.data);
         } catch (error) {
@@ -45,10 +47,14 @@ const SectionPage = () => {
     const createSection = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`/api/folders/${folderId}/section`, {
+            const response = await axios.post(`/api/folders/${folderId}/sections/`, {
                 name: newSectionName,
                 description: newSectionDescription,
                 folder_id: folderId
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
             });
             setSections([...sections, response.data]);
             setNewSectionName('');
@@ -62,13 +68,15 @@ const SectionPage = () => {
     const updateSection = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`/api/folders/${folderId}/sections/${selectedSection.id}`, {
+            await axios.put(`/api/folders/${folderId}/section/${selectedSection.section_id}`, {
                 name: editedName,
                 description: editedDescription,
                 folder_id: folderId
+            }, {
+                headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
             setSections(sections.map(section =>
-                section.id === selectedSection.id
+                section.section_id === selectedSection.section_id
                     ? { ...section, name: editedName, description: editedDescription }
                     : section
             ));
@@ -81,10 +89,12 @@ const SectionPage = () => {
         }
     };
 
-    const deleteSection = async (sectionId) => {
+    const deleteSection = async (section_id) => {
         try {
-            await axios.delete(`/api/folders/${folderId}/sections/${sectionId}`);
-            setSections(sections.filter(section => section.id !== sectionId));
+            await axios.delete(`/api/folders/${id}/sections/${section_id}`, {
+                headers: { 'Authorization': `Bearer ${session?.access_token}` }
+            });
+            setSections(sections.filter(section => section.section_id !== section_id));
         } catch (error) {
             console.error('Error deleting section:', error);
         }
@@ -121,9 +131,9 @@ const SectionPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {sections.map((section) => (
                         <div
-                            key={section.id}
+                            key={section.section_id}
                             className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer relative"
-                            onClick={() => navigate(`/folders/${folderId}/sections/${section.id}/exercises`)}
+                            onClick={() => navigate(`/folders/${folderId}/sections/${section.section_id}/exercises`)}
                         >
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">
                                 {section.name}
@@ -146,7 +156,7 @@ const SectionPage = () => {
                                     className="p-2 rounded-full bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 transition-colors"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        deleteSection(section.id);
+                                        deleteSection(section.section_id);
                                     }}
                                 >
                                     <Trash className="w-4 h-4" />

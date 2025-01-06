@@ -32,7 +32,7 @@ const Modal = ({ isOpen, onClose, children }) => {
 const FoldersPage = () => {
     const [folders, setFolders] = useState([]);
     const [newFolderName, setNewFolderName] = useState('');
-    const [newFolderDescription, setNewFolderDescription] = useState('');
+    // const [newFolderDescription, setNewFolderDescription] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingFolder, setEditingFolder] = useState(null);
@@ -68,7 +68,7 @@ const FoldersPage = () => {
             });
             setFolders([...folders, response.data]);
             setNewFolderName('');
-            setNewFolderDescription('');
+            // setNewFolderDescription('');
             setIsCreateModalOpen(false);
         } catch (error) {
             console.error('Error creating folder:', error);
@@ -80,7 +80,7 @@ const FoldersPage = () => {
     const updateFolder = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`/api/folders/${editingFolder.id}`, {
+            const response = await axios.put(`/api/folders/${editingFolder.id}/`, {
                 name: editingFolder.name,
                 // description: editingFolder.description  // Include description if your backend expects it
             }, {
@@ -107,10 +107,10 @@ const FoldersPage = () => {
     };
 
 
-    const deleteFolder = async (folderId) => {
+    const deleteFolder = async (id) => {
         try {
-            await axios.delete(`/api/folders/${folderId}`);
-            setFolders(folders.filter(folder => folder.id !== folderId));
+            await axios.delete(`/api/folders/${id}/`);
+            setFolders(folders.filter(folder => folder.id !== id));
         } catch (error) {
             console.error('Error deleting folder:', error);
         }
@@ -161,7 +161,7 @@ const FoldersPage = () => {
                                     required
                                 />
                             </div>
-                            <div className="mb-4">
+                            {/* <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Description
                                 </label>
@@ -171,7 +171,7 @@ const FoldersPage = () => {
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     rows="3"
                                 />
-                            </div>
+                            </div> */}
                             <button
                                 type="submit"
                                 className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -196,7 +196,7 @@ const FoldersPage = () => {
                                     required
                                 />
                             </div>
-                            <div className="mb-4">
+                            {/* <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Description
                                 </label>
@@ -206,7 +206,7 @@ const FoldersPage = () => {
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     rows="3"
                                 />
-                            </div>
+                            </div> */}
                             <button
                                 type="submit"
                                 className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -224,7 +224,7 @@ const FoldersPage = () => {
                                 onClick={() => navigate(`/folders/${folder.id}/sections`)}
                             >
                                 <h3 className="text-lg font-semibold text-gray-900">{folder.name}</h3>
-                                <p className="text-gray-500 text-sm mt-2">{folder.description}</p>
+                                {/* <p className="text-gray-500 text-sm mt-2">{folder.description}</p> */}
                                 <div className="absolute top-4 right-4 flex gap-2">
                                     <button
                                         type="button"
