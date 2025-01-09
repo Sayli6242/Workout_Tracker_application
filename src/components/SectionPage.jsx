@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, ArrowLeft, Trash, X, Edit } from 'lucide-react';
-import axios from 'axios';
+import axios from '../lib/axiosConfig';
 import { useAuth } from '../components/auth/AuthContext';
-
+import { authStyles } from '../components/styles/constants';
+import FoldersPage from './FoldersPage';
 const SectionPage = () => {
     const { folderId } = useParams();
     const navigate = useNavigate();
@@ -36,7 +37,7 @@ const SectionPage = () => {
 
     const fetchSections = async () => {
         try {
-            const response = await axios.get(`/api/folders/${folderId}/sections`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
+            const response = await axios.get(`/api/folders/${folderId}/sections/`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
             console.log('fetched sections:', response.data);
             setSections(response.data);
         } catch (error) {
@@ -50,7 +51,7 @@ const SectionPage = () => {
             const response = await axios.post(`/api/folders/${folderId}/sections/`, {
                 name: newSectionName,
                 description: newSectionDescription,
-                folder_id: folderId
+                id: folderId
             }, {
                 headers: {
                     'Authorization': `Bearer ${session?.access_token}`
@@ -68,7 +69,7 @@ const SectionPage = () => {
     const updateSection = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`/api/folders/${folderId}/section/${selectedSection.section_id}`, {
+            await axios.put(`/api/folders/${folderId}/sections/${selectedSection.section_id}`, {
                 name: editedName,
                 description: editedDescription,
                 folder_id: folderId
@@ -91,7 +92,7 @@ const SectionPage = () => {
 
     const deleteSection = async (section_id) => {
         try {
-            await axios.delete(`/api/folders/${id}/sections/${section_id}`, {
+            await axios.delete(`/api/folders/${folderId}/sections/${section_id}`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
             setSections(sections.filter(section => section.section_id !== section_id));

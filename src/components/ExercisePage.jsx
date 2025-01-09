@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, ArrowLeft, X } from 'lucide-react';
-import axios from 'axios';
+import axios from '../lib/axiosConfig';
+import { useAuth } from '../components/auth/AuthContext';
+import { authStyles } from '../components/styles/constants';
+// import Modal from '../components/Modal';
+import SectionPage from './SectionPage';
 
 const ExercisePage = () => {
     const { folderId, sectionId } = useParams();
@@ -21,7 +25,7 @@ const ExercisePage = () => {
 
     const fetchSectionDetails = async () => {
         try {
-            const response = await axios.get(`/api/folders/${folderId}/sections/${sectionId}`);
+            const response = await axios.get(`/api/folders/${folderId}/sections/${sectionId}`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
             setSectionName(response.data.name); // Updated to directly access name
         } catch (error) {
             console.error('Error fetching section details:', error);
@@ -30,7 +34,7 @@ const ExercisePage = () => {
 
     const fetchExercises = async () => {
         try {
-            const response = await axios.get(`/api/folders/${folderId}/sections/${sectionId}/exercises`);
+            const response = await axios.get(`/api/folders/${folderId}/sections/${sectionId}/exercises`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
             const exercisesWithImages = await Promise.all(
                 response.data.map(async (exercise) => {
                     try {
@@ -57,19 +61,25 @@ const ExercisePage = () => {
     const createExercise = async (e) => {
         e.preventDefault();
         try {
-            const formData = new FormData();
-            const exerciseData = {
-                title: newExerciseName,
-                description: description
-            };
 
-            formData.append('exercise', JSON.stringify(exerciseData));
+            const formData = new FormData();
+            formData.append('name', newExerciseName);
+            formData.append('description', description || '');  // Ensure description isn't null
             if (selectedImage) {
-                formData.append('uploaded_image', selectedImage);
+                formData.append('image', selectedImage);
             }
 
+            console.log('Sending formData:', {
+                name: newExerciseName,
+                description: description,
+                hasImage: !!selectedImage
+            });
+
+
+
+
             const response = await axios.post(
-                `/api/folders/${folderId}/sections/${sectionId}/exercises`,
+                `/api/folders/${folderId}/sections/${sectionId}/exercises/`,
                 formData,
                 {
                     headers: { 'Content-Type': 'multipart/form-data' }
