@@ -1,39 +1,33 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
-import axios from 'axios';
-import { AuthProvider, useAuth } from '../src/components/auth/AuthContext';  // Import both AuthProvider and useAuth
+import { AuthProvider } from '../src/components/auth/AuthContext';
 import Login from '../src/components/auth/Login';
-import Register from '../src/components/auth/Register'
+import Register from '../src/components/auth/Register';
 import HomePage from './components/HomePage';
 import FoldersPage from './components/FoldersPage';
 import SectionPage from './components/SectionPage';
 import ExercisePage from './components/ExercisePage';
 import ErrorPage from './components/ErrorPage';
-
-// Create a protected route wrapper component
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return children;
-};
+import PublicRoute from './components/auth/PublicRoute';
+import ProtectedRoute from './components/auth/protectedRoute';
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Login />,
+    path: '/login',
+    element: (
+      <PublicRoute>
+        <Login />
+      </PublicRoute>
+    ),
     errorElement: <ErrorPage />
   },
   {
     path: '/register',
-    element: <Register />,
+    element: (
+      <PublicRoute>
+        <Register />
+      </PublicRoute>
+    ),
     errorElement: <ErrorPage />
   },
   {
@@ -77,8 +71,12 @@ const router = createBrowserRouter([
     element: <Navigate to="/folders" replace />
   },
   {
+    path: '/',
+    element: <Navigate to="/Home" replace />
+  },
+  {
     path: '*',
-    element: <Navigate to="/" replace />
+    element: <Navigate to="/Home" replace />
   }
 ]);
 
