@@ -58,7 +58,10 @@ export const AuthProvider = ({ children }) => {
             signIn,
             signOut,
             getAccessToken, // Expose the getAccessToken function
-            isAuthenticated: !!user
+            isAuthenticated: !!user,
+            supabase
+
+
         }}>
             {!loading && children}
         </AuthContext.Provider>

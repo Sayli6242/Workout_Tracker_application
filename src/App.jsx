@@ -10,6 +10,7 @@ import ExercisePage from './components/ExercisePage';
 import ErrorPage from './components/ErrorPage';
 import PublicRoute from './components/auth/PublicRoute';
 import ProtectedRoute from './components/auth/protectedRoute';
+import ForgetPassword from './components/auth/ForgetPassword';
 
 const router = createBrowserRouter([
   {
@@ -17,6 +18,15 @@ const router = createBrowserRouter([
     element: (
       <PublicRoute>
         <Login />
+      </PublicRoute>
+    ),
+    errorElement: <ErrorPage />
+  },
+  {
+    path: '/forgot-password',
+    element: (
+      <PublicRoute>
+        <ForgetPassword />
       </PublicRoute>
     ),
     errorElement: <ErrorPage />
@@ -30,6 +40,7 @@ const router = createBrowserRouter([
     ),
     errorElement: <ErrorPage />
   },
+
   {
     path: '/Home',
     element: (

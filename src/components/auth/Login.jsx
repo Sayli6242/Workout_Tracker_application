@@ -1,3 +1,5 @@
+
+// Modified Login.jsx with Forgot Password Link
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -11,7 +13,6 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const { signIn } = useAuth();
     const navigate = useNavigate();
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -74,6 +75,11 @@ export default function Login() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     disabled={loading}
                                 />
+                            </div>
+                            <div className="text-right">
+                                <Link to="/forgot-password" className="text-sm text-indigo-600 hover:text-indigo-500 transition-colors">
+                                    Forgot password?
+                                </Link>
                             </div>
                         </div>
 
