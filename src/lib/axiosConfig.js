@@ -12,6 +12,10 @@ axiosInstance.interceptors.request.use(async (config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+    //check if the request data is a formdata object
+    if (config.data instanceof FormData) {
+        config.headers['Content-Type'] = 'multipart/form-data';
+    }
     return config;
 }, (error) => {
     return Promise.reject(error);

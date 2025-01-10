@@ -4,6 +4,7 @@ import { Plus, ArrowLeft, Trash, Edit } from 'lucide-react';
 import { FolderPlus } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthContext';
 import { authStyles } from '../components/styles/constants';
+import Navbar from './Navbar'; // Add this import
 
 // // Change the import from
 // import axios from 'axios';
@@ -123,45 +124,50 @@ const FoldersPage = () => {
     };
 
     return (
-        <div className="bg-cover bg-no-repeat bg-center" style={{ backgroundImage: authStyles.backgroundImage }}>
+        <>
+            <Navbar />
+            <div className="bg-cover bg-no-repeat bg-center" style={{ backgroundImage: authStyles.backgroundImage }}>
 
-            <div className="min-h-screen bg-gray-50 p-6">
-                <div className="max-w-4xl mx-auto">
-                    <button
-                        onClick={() => navigate('/Home')}
-                        className="mb-6 inline-flex items-center text-[#A0522D] hover:text-[#D2691E] rounded-lg border border-[#A0522D] hover:border-[#D2691E] px-4 py-2 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Home
-                    </button>
+                <div className="min-h-screen bg-gray-50 p-6 bg-opacity-50">
+                    <div className="max-w-4xl mx-auto">
+                        <button
+                            onClick={() => navigate('/Home')}
+                            className="mb-6 inline-flex items-center text-[#A0522D] hover:text-[#D2691E] rounded-lg border border-[#A0522D] hover:border-[#D2691E] px-4 py-2 transition-colors"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back to Home
+                        </button>
 
-                    <h1 className="text-2xl font-bold text-gray-900 mb-6">Your Folders</h1>
+                        <div className="mb-6 border-b border-black dark:border-white">
+                            <h1 className="text-3xl font-serif font-bold text-black dark:text-white">
+                                Your Folders
+                            </h1>
+                            <p className="text-gray-600 dark:text-gray-300 mt-1"></p>
+                        </div>
+                        <button
+                            onClick={() => setIsCreateModalOpen(true)}
+                            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#794BC4] to-[#8F5E99] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow mb-6"
+                        >
+                            <FolderPlus className="w-5 h-5 mr-2" />
+                            Create Folder
+                        </button>
 
-
-                    <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#794BC4] to-[#8F5E99] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-                    >
-                        <FolderPlus className="w-5 h-5 mr-2" />
-                        Create Folder
-                    </button>
-
-                    <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
-                        <h2 className="text-xl font-bold mb-4">Create New Folder</h2>
-                        <form onSubmit={createFolder}>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Folder Name
-                                </label>
-                                <input
-                                    type="text"
-                                    value={newFolderName}
-                                    onChange={(e) => setNewFolderName(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    required
-                                />
-                            </div>
-                            {/* <div className="mb-4">
+                        <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
+                            <h2 className="text-xl font-bold mb-4">Create New Folder</h2>
+                            <form onSubmit={createFolder}>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Folder Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newFolderName}
+                                        onChange={(e) => setNewFolderName(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        required
+                                    />
+                                </div>
+                                {/* <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Description
                                 </label>
@@ -172,31 +178,41 @@ const FoldersPage = () => {
                                     rows="3"
                                 />
                             </div> */}
-                            <button
-                                type="submit"
-                                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                            >
-                                Create
-                            </button>
-                        </form>
-                    </Modal>
 
-                    <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
-                        <h2 className="text-xl font-bold mb-4">Edit Folder</h2>
-                        <form onSubmit={updateFolder}>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Folder Name
-                                </label>
-                                <input
-                                    type="text"
-                                    value={editingFolder?.name || ''}
-                                    onChange={(e) => setEditingFolder({ ...editingFolder, name: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    required
-                                />
-                            </div>
-                            {/* <div className="mb-4">
+                                <div className="flex items-center justify-end gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCreateModalOpen(false)}
+                                        className="inline-flex items-center px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#794BC4] to-[#8F5E99] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                                    >
+                                        Create Folder
+                                    </button>
+                                </div>
+                            </form>
+                        </Modal>
+
+                        <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+                            <h2 className="text-xl font-bold mb-4">Edit Folder</h2>
+                            <form onSubmit={updateFolder}>
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Folder Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editingFolder?.name || ''}
+                                        onChange={(e) => setEditingFolder({ ...editingFolder, name: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        required
+                                    />
+                                </div>
+                                {/* <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Description
                                 </label>
@@ -207,49 +223,50 @@ const FoldersPage = () => {
                                     rows="3"
                                 />
                             </div> */}
-                            <button
-                                type="submit"
-                                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                            >
-                                Update
-                            </button>
-                        </form>
-                    </Modal>
+                                <button
+                                    type="submit"
+                                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                                >
+                                    Update
+                                </button>
+                            </form>
+                        </Modal>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {folders.map((folder) => (
-                            <div
-                                key={folder.id}
-                                className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer relative"
-                                onClick={() => navigate(`/folders/${folder.id}/sections`)}
-                            >
-                                <h3 className="text-lg font-semibold text-gray-900">{folder.name}</h3>
-                                {/* <p className="text-gray-500 text-sm mt-2">{folder.description}</p> */}
-                                <div className="absolute top-4 right-4 flex gap-2">
-                                    <button
-                                        type="button"
-                                        className="p-2 rounded-full bg-blue-100 text-blue-500 hover:bg-blue-200 hover:text-blue-600 transition-colors"
-                                        onClick={(e) => handleEditClick(e, folder)}
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="p-2 rounded-full bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 transition-colors"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            deleteFolder(folder.id);
-                                        }}
-                                    >
-                                        <Trash className="w-4 h-4" />
-                                    </button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {folders.map((folder) => (
+                                <div
+                                    key={folder.id}
+                                    className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer relative"
+                                    onClick={() => navigate(`/folders/${folder.id}/sections`)}
+                                >
+                                    <h3 className="text-lg font-semibold text-gray-900">{folder.name}</h3>
+                                    {/* <p className="text-gray-500 text-sm mt-2">{folder.description}</p> */}
+                                    <div className="absolute top-4 right-4 flex gap-2">
+                                        <button
+                                            type="button"
+                                            className="p-2 rounded-full bg-blue-100 text-blue-500 hover:bg-blue-200 hover:text-blue-600 transition-colors"
+                                            onClick={(e) => handleEditClick(e, folder)}
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="p-2 rounded-full bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 transition-colors"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteFolder(folder.id);
+                                            }}
+                                        >
+                                            <Trash className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </>
     );
 };
 

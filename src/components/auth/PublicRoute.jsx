@@ -1,12 +1,12 @@
-// ProtectedRoute.jsx
+// PublicRoute.jsx
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
-export default function ProtectedRoute({ children }) {
+export default function PublicRoute({ children }) {
     const { user } = useAuth();
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
+    if (user) {
+        return <Navigate to="/Home" replace />;
     }
 
     return children;
