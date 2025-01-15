@@ -10,7 +10,7 @@
   ],
   "rewrites": [
     {
-      "source": "/api/.*",
+      "source": "/api/.path*",
       "destination": "https://fastapibackend-0kb9.onrender.com/:path*"
     }
   ]
