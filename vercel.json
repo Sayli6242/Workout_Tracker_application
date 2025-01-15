@@ -12,6 +12,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://fastapibackend-0kb9.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
     }
   ]
 }
