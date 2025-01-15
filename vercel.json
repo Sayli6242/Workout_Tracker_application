@@ -11,7 +11,7 @@
   "rewrites": [
     {
       "source": "/api/.*",
-      "destination": "http://localhost:8000/:path*"
+      "destination": "https://fastapibackend-0kb9.onrender.com/:path*"
     }
   ]
 }
