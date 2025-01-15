@@ -11,6 +11,7 @@ import ErrorPage from './components/ErrorPage';
 import PublicRoute from './components/auth/PublicRoute';
 import ProtectedRoute from './components/auth/protectedRoute';
 import ForgetPassword from './components/auth/ForgetPassword';
+import ResetPassword from './components/ResetPassword';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,14 @@ const router = createBrowserRouter([
       </PublicRoute>
     ),
     errorElement: <ErrorPage />
+  },
+  {
+    path: '/reset-password',
+    element: (
+      <ProtectedRoute>
+        <ResetPassword />
+      </ProtectedRoute>
+    )
   },
 
   {
