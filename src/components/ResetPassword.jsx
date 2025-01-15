@@ -1,7 +1,7 @@
 // ResetPassword.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from './auth/AuthContext';
 import { authStyles } from './styles/constants';
 
 export default function ResetPassword() {
