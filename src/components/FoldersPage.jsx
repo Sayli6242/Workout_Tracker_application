@@ -46,7 +46,7 @@ const FoldersPage = () => {
 
     const fetchFolders = async () => {
         try {
-            const response = await axios.get('/folders/');
+            const response = await axios.get('/api/folders/');
             setFolders(response.data);
         } catch (error) {
             console.error('Error fetching folders:', error);
