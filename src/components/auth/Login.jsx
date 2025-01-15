@@ -1,28 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Mail, LockKeyhole } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authStyles } from './styles/constants';
 import { useAuth } from './AuthContext';
-// import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
     const { signIn } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // Handle state passed from password reset
+    useEffect(() => {
+        if (location.state) {
+            const { message, email: resetEmail, error: locationError, passwordReset } = location.state;
+
+            if (message) {
+                setSuccessMessage(message);
+            }
+
+            if (resetEmail) {
+                setEmail(resetEmail);
+            }
+
+            if (locationError) {
+                setError(locationError);
+            }
+
+            // Clear the location state to prevent showing the message on refresh
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             setError('');
-
+            setSuccessMessage('');
             setLoading(true);
+
             const { error } = await signIn(email, password);
             if (error) throw error;
-            // navigate('/Home');
+
+            // If login successful, redirect to home
+            navigate('/Home');
         } catch (error) {
             setError(error.message);
         } finally {
@@ -55,6 +81,11 @@ export default function Login() {
                                 <span className="block sm:inline">{error}</span>
                             </div>
                         )}
+                        {successMessage && (
+                            <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg relative" role="alert">
+                                <span className="block sm:inline">{successMessage}</span>
+                            </div>
+                        )}
                         <div className="space-y-4">
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-rose-300">
@@ -82,6 +113,7 @@ export default function Login() {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     disabled={loading}
+                                    autoFocus={location.state?.passwordReset}
                                 />
                                 <button
                                     type="button"

@@ -1,6 +1,6 @@
 // ResetPassword.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import { authStyles } from './styles/constants';
 
@@ -11,14 +11,18 @@ export default function ResetPassword() {
     const [loading, setLoading] = useState(false);
     const { supabase } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         // Verify user is in password recovery flow
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
 
-            if (!user) {
-                navigate('/login');
+            // If no user or no recovery token, redirect to login
+            if (!user || !location.search.includes('token')) {
+                navigate('/login', {
+                    state: { error: 'Invalid password reset session. Please try again.' }
+                });
             }
         };
 
@@ -41,16 +45,26 @@ export default function ResetPassword() {
             setError('');
             setLoading(true);
 
-            const { error } = await supabase.auth.updateUser({
+            // Get user email from the session
+            const { data: { user } } = await supabase.auth.getUser();
+            const userEmail = user?.email;
+
+            // Update password
+            const { error: updateError } = await supabase.auth.updateUser({
                 password: password
             });
 
-            if (error) throw error;
+            if (updateError) throw updateError;
 
-            // Optional: Add success notification
+            // Sign out the user to ensure they need to login with new password
+            await supabase.auth.signOut();
+
+            // Redirect to login with success message and email pre-filled
             navigate('/login', {
                 state: {
-                    message: 'Password reset successfully!'
+                    message: 'Password reset successfully! Please login with your new password.',
+                    email: userEmail,
+                    passwordReset: true
                 }
             });
         } catch (error) {
