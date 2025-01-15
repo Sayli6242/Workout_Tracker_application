@@ -59,7 +59,7 @@ const FoldersPage = () => {
     const createFolder = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/folders/', {
+            const response = await axios.post('/api/folders/', {
                 name: newFolderName,
                 // description: newFolderDescription
             }, {
