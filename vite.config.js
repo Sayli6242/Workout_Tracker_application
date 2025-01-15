@@ -4,6 +4,7 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.VITE_BASE_PATH || '/',
 
   plugins: [react()],
 
@@ -16,7 +17,7 @@ export default defineConfig({
     port: 3001,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://fastapibackend-0kb9.onrender.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
