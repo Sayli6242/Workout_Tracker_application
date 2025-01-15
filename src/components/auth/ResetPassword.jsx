@@ -14,20 +14,34 @@ export default function ResetPassword() {
     const location = useLocation();
 
     useEffect(() => {
-        // Verify user is in password recovery flow
-        const checkUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+        const handlePasswordResetToken = async () => {
+            try {
+                // Get the hash or search params from URL
+                const params = new URLSearchParams(location.hash.replace('#', '') || location.search);
+                const accessToken = params.get('access_token');
 
-            // If no user or no recovery token, redirect to login
-            if (!user || !location.search.includes('token')) {
+                if (!accessToken) {
+                    throw new Error('No reset token found');
+                }
+
+                // Set the session with the access token
+                const { error: sessionError } = await supabase.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: null
+                });
+
+                if (sessionError) throw sessionError;
+
+            } catch (error) {
+                console.error('Reset token error:', error);
                 navigate('/login', {
-                    state: { error: 'Invalid password reset session. Please try again.' }
+                    state: { error: 'Invalid password reset link. Please try again.' }
                 });
             }
         };
 
-        checkUser();
-    }, []);
+        handlePasswordResetToken();
+    }, [location, navigate, supabase.auth]);
 
     const handleResetPassword = async (e) => {
         e.preventDefault();
@@ -45,28 +59,34 @@ export default function ResetPassword() {
             setError('');
             setLoading(true);
 
-            // Get user email from the session
+            // Get current user email before updating password
             const { data: { user } } = await supabase.auth.getUser();
             const userEmail = user?.email;
 
-            // Update password
+            if (!userEmail) {
+                throw new Error('User email not found');
+            }
+
+            // Update the password
             const { error: updateError } = await supabase.auth.updateUser({
                 password: password
             });
 
             if (updateError) throw updateError;
 
-            // Sign out the user to ensure they need to login with new password
+            // Sign out to force new login with new password
             await supabase.auth.signOut();
 
-            // Redirect to login with success message and email pre-filled
+            // Redirect to login with success message
             navigate('/login', {
                 state: {
-                    message: 'Password reset successfully! Please login with your new password.',
+                    message: 'Password updated successfully! Please sign in with your new password.',
                     email: userEmail,
                     passwordReset: true
-                }
+                },
+                replace: true // Replace history to prevent back navigation
             });
+
         } catch (error) {
             setError(error.message);
         } finally {
@@ -75,58 +95,57 @@ export default function ResetPassword() {
     };
 
     return (
-        <div
-            className={authStyles.pageWrapper}
-            style={{ backgroundImage: authStyles.backgroundImage }}
-        >
-            <div className="max-w-md w-full mx-4">
-                <div className={authStyles.cardOverlay}>
+        <div className="min-h-screen bg-gradient-to-tr from-rose-50 to-white flex items-center justify-center p-4">
+            <div className="max-w-md w-full">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-rose-100">
                     <div className="space-y-2">
-                        <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                            Set New Password
+                        <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-yellow-600 to-rose-300 bg-clip-text text-transparent">
+                            Reset Password
                         </h2>
-                        <p className="text-center text-gray-600">
-                            Enter a new secure password
+                        <p className="text-center text-rose-800/60">
+                            Please enter your new password
                         </p>
                     </div>
 
                     <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
                         {error && (
-                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                            <div className="bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-lg relative">
                                 <span className="block sm:inline">{error}</span>
                             </div>
                         )}
 
-                        <div>
-                            <input
-                                type="password"
-                                required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                placeholder="New Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                disabled={loading}
-                            />
-                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <input
+                                    type="password"
+                                    required
+                                    className="w-full px-4 py-2 border border-rose-200 rounded-lg focus:ring-2 focus:ring-rose-200 focus:border-rose-300 bg-white/50"
+                                    placeholder="New Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
 
-                        <div>
-                            <input
-                                type="password"
-                                required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                placeholder="Confirm New Password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                disabled={loading}
-                            />
+                            <div>
+                                <input
+                                    type="password"
+                                    required
+                                    className="w-full px-4 py-2 border border-rose-200 rounded-lg focus:ring-2 focus:ring-rose-200 focus:border-rose-300 bg-white/50"
+                                    placeholder="Confirm New Password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </div>
                         </div>
 
                         <button
                             type="submit"
-                            className="w-full py-2 px-4 border border-transparent rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                            className="w-full py-2 px-4 border border-transparent rounded-lg text-white bg-gradient-to-r from-rose-400 to-rose-300 hover:from-rose-500 hover:to-rose-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-300 transition-colors shadow-sm"
                             disabled={loading}
                         >
-                            {loading ? 'Updating...' : 'Reset Password'}
+                            {loading ? 'Updating...' : 'Update Password'}
                         </button>
                     </form>
                 </div>
