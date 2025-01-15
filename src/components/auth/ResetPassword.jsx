@@ -100,7 +100,7 @@ export default function ResetPassword() {
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-rose-100">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-yellow-600 to-rose-300 bg-clip-text text-transparent">
-                            Reset Password
+                            update password
                         </h2>
                         <p className="text-center text-rose-800/60">
                             Please enter your new password
