@@ -1,5 +1,5 @@
 export const authStyles = {
-  backgroundImage: "url('https://marketplace.canva.com/EAGBzICL4nk/1/0/1600w/canva-pink-and-blue-cute-desktop-wallpaper-EQcU9lTQ_-Q.jpg')",
+  backgroundImage: "url('https://i.pinimg.com/736x/7c/da/5f/7cda5f87dc2f729ed98fbee68dd3ae93.jpg')",
   cardOverlay: `
       relative
       bg-white/90 backdrop-blur-sm
