@@ -23,7 +23,7 @@ const ExercisePage = () => {
     }, [folderId, sectionId]);
     const fetchSectionDetails = async () => {
         try {
-            const response = await axios.get(`/api/folders/${folderId}/sections/${sectionId}/`);
+            const response = await axios.get(`/folders/${folderId}/sections/${sectionId}/`);
             setSectionName(response.data.name);
         } catch (error) {
             console.error('Error fetching section details:', error);
@@ -33,7 +33,7 @@ const ExercisePage = () => {
     const fetchExercises = async () => {
         try {
             const response = await axios.get(
-                `/api/folders/${folderId}/sections/${sectionId}/exercises/`
+                `/folders/${folderId}/sections/${sectionId}/exercises/`
             );
             setExercises(response.data);
         } catch (error) {
@@ -52,7 +52,7 @@ const ExercisePage = () => {
             }
 
             await axios.post(
-                `/api/folders/${folderId}/sections/${sectionId}/exercises/`,
+                `/folders/${folderId}/sections/${sectionId}/exercises/`,
                 formData,
                 {
                     headers: { 'Content-Type': 'multipart/form-data' }
@@ -86,7 +86,7 @@ const ExercisePage = () => {
             }
 
             await axios.put(
-                `/api/folders/${folderId}/sections/${sectionId}/exercises/${editingExercise.id}/`,
+                `/folders/${folderId}/sections/${sectionId}/exercises/${editingExercise.id}/`,
                 formData,
                 {
                     headers: { 'Content-Type': 'multipart/form-data' }
@@ -103,7 +103,7 @@ const ExercisePage = () => {
     const deleteExercise = async (exerciseId) => {
         try {
             await axios.delete(
-                `/api/folders/${folderId}/sections/${sectionId}/exercises/${exerciseId}/`
+                `/folders/${folderId}/sections/${sectionId}/exercises/${exerciseId}/`
             );
             setExercises(exercises.filter((exercise) => exercise.id !== exerciseId));
         } catch (error) {

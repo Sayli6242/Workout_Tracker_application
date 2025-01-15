@@ -19,7 +19,7 @@ export default defineConfig({
       '/api': {
         target: 'https://fastapibackend-0kb9.onrender.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => path.replace(/^\/api/, '/api')
       }
     }
   },

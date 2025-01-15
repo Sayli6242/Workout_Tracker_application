@@ -46,7 +46,7 @@ const FoldersPage = () => {
 
     const fetchFolders = async () => {
         try {
-            const response = await axios.get('/api/folders/');
+            const response = await axios.get('/folders/');
             setFolders(response.data);
         } catch (error) {
             console.error('Error fetching folders:', error);
@@ -59,7 +59,7 @@ const FoldersPage = () => {
     const createFolder = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/api/folders/', {
+            const response = await axios.post('/folders/', {
                 name: newFolderName,
                 // description: newFolderDescription
             }, {
@@ -81,7 +81,7 @@ const FoldersPage = () => {
     const updateFolder = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`/api/folders/${editingFolder.id}/`, {
+            const response = await axios.put(`/folders/${editingFolder.id}/`, {
                 name: editingFolder.name,
                 // description: editingFolder.description  // Include description if your backend expects it
             }, {
@@ -110,7 +110,7 @@ const FoldersPage = () => {
 
     const deleteFolder = async (id) => {
         try {
-            await axios.delete(`/api/folders/${id}/`);
+            await axios.delete(`/folders/${id}/`);
             setFolders(folders.filter(folder => folder.id !== id));
         } catch (error) {
             console.error('Error deleting folder:', error);

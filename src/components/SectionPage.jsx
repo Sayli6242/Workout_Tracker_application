@@ -29,7 +29,7 @@ const SectionPage = () => {
 
     const fetchFolderDetails = async () => {
         try {
-            const response = await axios.get(`/api/folders/${folderId}`, {
+            const response = await axios.get(`/folders/${folderId}`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
             setFolderName(response.data.name);
@@ -40,7 +40,7 @@ const SectionPage = () => {
 
     // const fetchFolderDetails = async () => {
     //     try {
-    //         const response = await axios.get(`/api/folders/`, { 
+    //         const response = await axios.get(`/folders/`, { 
     //             headers: { 'Authorization': `Bearer ${session?.access_token}` } 
     //         });
     //         // Find the matching folder by ID
@@ -55,7 +55,7 @@ const SectionPage = () => {
 
     const fetchSections = async () => {
         try {
-            const response = await axios.get(`/api/folders/${folderId}/sections/`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
+            const response = await axios.get(`/folders/${folderId}/sections/`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
             console.log('fetched sections:', response.data);
             setSections(response.data);
         } catch (error) {
@@ -66,7 +66,7 @@ const SectionPage = () => {
     const createSection = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`/api/folders/${folderId}/sections/`, {
+            const response = await axios.post(`/folders/${folderId}/sections/`, {
                 name: newSectionName,
                 description: newSectionDescription,
                 id: folderId
@@ -87,7 +87,7 @@ const SectionPage = () => {
     const updateSection = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`/api/folders/${folderId}/sections/${selectedSection.section_id}`, {
+            await axios.put(`/folders/${folderId}/sections/${selectedSection.section_id}`, {
                 name: editedName,
                 description: editedDescription,
                 folder_id: folderId
@@ -110,7 +110,7 @@ const SectionPage = () => {
 
     const deleteSection = async (section_id) => {
         try {
-            await axios.delete(`/api/folders/${folderId}/sections/${section_id}`, {
+            await axios.delete(`/folders/${folderId}/sections/${section_id}`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
             setSections(sections.filter(section => section.section_id !== section_id));
