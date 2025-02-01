@@ -225,7 +225,7 @@ const FoldersPage = () => {
                             </div> */}
                                 <button
                                     type="submit"
-                                    className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#794BC4] to-[#8F5E99] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow"
                                 >
                                     Update
                                 </button>
