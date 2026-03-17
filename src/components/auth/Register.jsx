@@ -32,73 +32,53 @@ export default function Register() {
     };
 
     return (
-        <div
-            className={authStyles.pageWrapper}
-            style={{ backgroundImage: authStyles.backgroundImage }}
-        >
-            <div className="max-w-md w-full mx-4">
-                <div className={authStyles.cardOverlay}>
-                    <div className="space-y-2">
-                        <div className="flex justify-center">
-                            <UserPlus className="h-12 w-12 text-indigo-600" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                            Create Account
-                        </h2>
-                        <p className="text-center text-gray-600">
-                            Already have an account?{' '}
-                            <Link to="/login" className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
-                                Sign in
-                            </Link>
-                        </p>
+        <div className="min-h-screen bg-[#0d0d17] flex items-center justify-center p-4 relative overflow-hidden">
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="max-w-md w-full relative">
+                <div className="text-center mb-8">
+                    <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-purple-600 to-violet-600 shadow-lg shadow-purple-500/25 mb-4">
+                        <UserPlus size={28} className="text-white" />
                     </div>
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                    <h2 className="text-3xl font-bold text-white">Create account</h2>
+                    <p className="text-gray-500 mt-2">
+                        Already have an account?{' '}
+                        <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+                            Sign in
+                        </Link>
+                    </p>
+                </div>
+                <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl shadow-2xl p-8">
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                                <span className="block sm:inline">{error}</span>
-                            </div>
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm">{error}</div>
                         )}
-                        <div className="space-y-4">
-                            <div>
-                                <input
-                                    type="email"
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    placeholder="Email address"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    disabled={loading}
-                                />
-                            </div>
-                            <div>
-                                <input
-                                    type="password"
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    disabled={loading}
-                                />
-                            </div>
-                            <div>
-                                <input
-                                    type="password"
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    placeholder="Confirm Password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    disabled={loading}
-                                />
-                            </div>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-500">
+                                <Mail size={18} />
+                            </span>
+                            <input type="email" required placeholder="Email address" value={email}
+                                onChange={(e) => setEmail(e.target.value)} disabled={loading}
+                                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
                         </div>
-
-                        <button
-                            type="submit"
-                            className="w-full py-2 px-4 border border-transparent rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                            disabled={loading}
-                        >
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-500">
+                                <LockKeyhole size={18} />
+                            </span>
+                            <input type="password" required placeholder="Password" value={password}
+                                onChange={(e) => setPassword(e.target.value)} disabled={loading}
+                                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
+                        </div>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-500">
+                                <LockKeyhole size={18} />
+                            </span>
+                            <input type="password" required placeholder="Confirm password" value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)} disabled={loading}
+                                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
+                        </div>
+                        <button type="submit" disabled={loading}
+                            className="w-full py-2.5 px-4 rounded-xl text-white bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 font-semibold shadow-lg shadow-purple-500/20 transition-all disabled:opacity-60 mt-2">
                             {loading ? 'Creating account...' : 'Create account'}
                         </button>
                     </form>

@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, ArrowLeft, Trash, X, Edit } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, Pencil, X, Layers } from 'lucide-react';
 import axios from '../lib/axiosConfig';
-import { useAuth } from '../components/auth/AuthContext';
-import { authStyles } from '../components/styles/constants';
-import FoldersPage from './FoldersPage';
 import Navbar from './Navbar';
+
+const Modal = ({ title, onClose, children }) => (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-semibold text-white">{title}</h2>
+                <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                    <X className="w-4 h-4" />
+                </button>
+            </div>
+            {children}
+        </div>
+    </div>
+);
 
 const SectionPage = () => {
     const { folderId } = useParams();
@@ -14,13 +25,11 @@ const SectionPage = () => {
     const [newSectionName, setNewSectionName] = useState('');
     const [newSectionDescription, setNewSectionDescription] = useState('');
     const [folderName, setFolderName] = useState('');
-    const [editingSectionId, setEditingSectionId] = useState(null);
-    const [editedName, setEditedName] = useState('');
-    const [editedDescription, setEditedDescription] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const [selectedSection, setSelectedSection] = useState(null);
-    const { session } = useAuth();
+    const [editedName, setEditedName] = useState('');
+    const [editedDescription, setEditedDescription] = useState('');
 
     useEffect(() => {
         fetchFolderDetails();
@@ -29,34 +38,16 @@ const SectionPage = () => {
 
     const fetchFolderDetails = async () => {
         try {
-            const response = await axios.get(`/folders/${folderId}`, {
-                headers: { 'Authorization': `Bearer ${session?.access_token}` }
-            });
+            const response = await axios.get(`/folders/${folderId}`);
             setFolderName(response.data.name);
         } catch (error) {
             console.error('Error fetching folder details:', error);
         }
     };
 
-    // const fetchFolderDetails = async () => {
-    //     try {
-    //         const response = await axios.get(`/folders/`, { 
-    //             headers: { 'Authorization': `Bearer ${session?.access_token}` } 
-    //         });
-    //         // Find the matching folder by ID
-    //         const folder = response.data.find(folder => folder.id === folderId);
-    //         if (folder) {
-    //             setFolderName(folder.name);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching folder details:', error);
-    //     }
-    // };
-
     const fetchSections = async () => {
         try {
-            const response = await axios.get(`/folders/${folderId}/sections/`, { headers: { 'Authorization': `Bearer ${session?.access_token}` } });
-            console.log('fetched sections:', response.data);
+            const response = await axios.get(`/folders/${folderId}/sections/`);
             setSections(response.data);
         } catch (error) {
             console.error('Error fetching sections:', error);
@@ -69,11 +60,6 @@ const SectionPage = () => {
             const response = await axios.post(`/folders/${folderId}/sections/`, {
                 name: newSectionName,
                 description: newSectionDescription,
-                id: folderId
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${session?.access_token}`
-                }
             });
             setSections([...sections, response.data]);
             setNewSectionName('');
@@ -87,222 +73,165 @@ const SectionPage = () => {
     const updateSection = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`/folders/${folderId}/sections/${selectedSection.section_id}`, {
+            await axios.put(`/folders/${folderId}/sections/${selectedSection.id}/`, {
                 name: editedName,
                 description: editedDescription,
-                folder_id: folderId
-            }, {
-                headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
-            setSections(sections.map(section =>
-                section.section_id === selectedSection.section_id
-                    ? { ...section, name: editedName, description: editedDescription }
-                    : section
+            setSections(sections.map(s =>
+                s.id === selectedSection.id ? { ...s, name: editedName, description: editedDescription } : s
             ));
             setShowUpdateModal(false);
             setSelectedSection(null);
-            setEditedName('');
-            setEditedDescription('');
         } catch (error) {
             console.error('Error updating section:', error);
         }
     };
 
-    const deleteSection = async (section_id) => {
+    const deleteSection = async (id) => {
         try {
-            await axios.delete(`/folders/${folderId}/sections/${section_id}`, {
-                headers: { 'Authorization': `Bearer ${session?.access_token}` }
-            });
-            setSections(sections.filter(section => section.section_id !== section_id));
+            await axios.delete(`/folders/${folderId}/sections/${id}/`);
+            setSections(sections.filter(s => s.id !== id));
         } catch (error) {
             console.error('Error deleting section:', error);
         }
     };
 
-    const handleEditClick = (section) => {
-        setSelectedSection(section);
-        setEditedName(section.name);
-        setEditedDescription(section.description || '');
-        setShowUpdateModal(true);
-    };
+    const sectionColors = [
+        'from-violet-500 to-purple-600',
+        'from-blue-500 to-indigo-600',
+        'from-teal-500 to-cyan-600',
+        'from-rose-500 to-pink-600',
+        'from-amber-500 to-orange-600',
+        'from-lime-500 to-green-600',
+    ];
 
     return (
-        <>
+        <div className="min-h-screen bg-[#0d0d17] text-white lg:ml-60 pt-14 lg:pt-0">
             <Navbar />
-            <div className="bg-cover bg-no-repeat bg-center" style={{ backgroundImage: authStyles.backgroundImage }}>
 
-                <div className="min-h-screen bg-gray-50 p-6 bg-opacity-50">            <div className="max-w-4xl mx-auto">
-                    <button
-                        onClick={() => navigate('/folders')}
-                        className="mb-6 inline-flex items-center text-[#A0522D] hover:text-[#D2691E] rounded-lg border border-[#A0522D] hover:border-[#D2691E] px-4 py-2 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Folders
-                    </button>
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-40 right-0 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
+            </div>
 
-                    <div className="mb-6 border-b border-black dark:border-white">
-                        <h1 className="text-3xl font-serif font-bold text-black dark:text-white">
-                            Folder : <span className="font-normal">{folderName || 'Loading...'}</span>
-                        </h1>
-                        <p className="text-gray-600 dark:text-gray-300 mt-1"></p>
+            <div className="relative max-w-5xl mx-auto px-4 py-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                    <div>
+                        <button
+                            onClick={() => navigate('/folders')}
+                            className="flex items-center gap-1.5 text-gray-400 hover:text-white text-sm mb-3 transition-colors"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Folders
+                        </button>
+                        <h1 className="text-3xl font-bold text-white">{folderName || 'Loading...'}</h1>
+                        <p className="text-gray-500 mt-1">{sections.length} section{sections.length !== 1 ? 's' : ''}</p>
                     </div>
                     <button
                         onClick={() => setShowCreateModal(true)}
-                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#794BC4] to-[#8F5E99] text-white rounded-lg shadow-lg hover:shadow-xl transition-shadow mb-6"
+                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/20 transition-all w-full sm:w-auto"
                     >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Create Section
+                        <Plus className="w-4 h-4" />
+                        New Section
                     </button>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {sections.map((section) => (
-                            <div
-                                key={section.section_id}
-                                className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer relative"
-                                onClick={() => navigate(`/folders/${folderId}/sections/${section.section_id}/exercises`)}
-                            >
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                    {section.name}
-                                </h3>
-                                <p className="text-gray-600 text-sm mb-4">{section.description}</p>
-                                <div className="absolute top-4 right-4 flex gap-2">
-                                    <button
-                                        type="button"
-                                        className="p-2 rounded-full bg-blue-100 text-blue-500 hover:bg-blue-200 hover:text-blue-600 transition-colors"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEditClick(section);
-                                        }}
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className="p-2 rounded-full bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 transition-colors"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            deleteSection(section.section_id);
-                                        }}
-                                    >
-                                        <Trash className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                {sections.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-32 text-center">
+                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10 mb-4">
+                            <Layers className="w-12 h-12 text-gray-600" />
+                        </div>
+                        <p className="text-gray-400 text-lg mb-2">No sections yet</p>
+                        <p className="text-gray-600 text-sm">Add a section to organise your exercises</p>
                     </div>
-
-                    {/* Create Section Modal */}
-                    {showCreateModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-lg p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-bold">Create New Section</h2>
-                                    <button onClick={() => setShowCreateModal(false)} className="p-1">
-                                        <X className="w-6 h-6" />
-                                    </button>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {sections.map((section, idx) => {
+                            const grad = sectionColors[idx % sectionColors.length];
+                            return (
+                                <div
+                                    key={section.id}
+                                    onClick={() => navigate(`/folders/${folderId}/sections/${section.id}/exercises`)}
+                                    className="group bg-[#1a1a2e] border border-white/5 rounded-2xl p-5 cursor-pointer hover:border-purple-500/30 hover:bg-[#1e1e35] transition-all duration-300 relative overflow-hidden"
+                                >
+                                    <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${grad}`} />
+                                    <div className={`inline-flex p-2.5 rounded-xl bg-gradient-to-br ${grad} mb-3 shadow-md`}>
+                                        <Layers className="w-5 h-5 text-white" />
+                                    </div>
+                                    <h3 className="text-white font-semibold text-base mb-1 pr-16">{section.name}</h3>
+                                    {section.description && (
+                                        <p className="text-gray-500 text-xs line-clamp-2">{section.description}</p>
+                                    )}
+                                    <div className="absolute top-4 right-4 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedSection(section);
+                                                setEditedName(section.name);
+                                                setEditedDescription(section.description || '');
+                                                setShowUpdateModal(true);
+                                            }}
+                                            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-colors"
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); deleteSection(section.id); }}
+                                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <form onSubmit={createSection}>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Section Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={newSectionName}
-                                            onChange={(e) => setNewSectionName(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Description
-                                        </label>
-                                        <textarea
-                                            value={newSectionDescription}
-                                            onChange={(e) => setNewSectionDescription(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            rows="3"
-                                        />
-                                    </div>
-                                    <div className="flex justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowCreateModal(false)}
-                                            className="inline-flex items-center px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-2 bg-gradient-to-r from-[#794BC4] to-[#8F5E99] text-white rounded-md shadow-lg hover:shadow-xl transition-shadow hover:bg-gradient-to-r hover:from-[#663399] hover:to-[#B300FF]"
-                                        >
-                                            Create
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Update Section Modal */}
-                    {showUpdateModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-                            <div className="bg-white rounded-lg p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-                                <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-bold">Edit Section</h2>
-                                    <button onClick={() => setShowUpdateModal(false)} className="p-1">
-                                        <X className="w-6 h-6" />
-                                    </button>
-                                </div>
-                                <form onSubmit={updateSection}>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Section Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={editedName}
-                                            onChange={(e) => setEditedName(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Description
-                                        </label>
-                                        <textarea
-                                            value={editedDescription}
-                                            onChange={(e) => setEditedDescription(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            rows="3"
-                                        />
-                                    </div>
-                                    <div className="flex justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowUpdateModal(false)}
-                                            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            className="px-4 py-2 bg-gradient-to-r from-[#794BC4] to-[#8F5E99] text-white rounded-md shadow-lg hover:shadow-xl transition-shadow hover:bg-gradient-to-r hover:from-[#663399] hover:to-[#B300FF]"
-                                        >
-                                            Update
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-                </div>
-                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
-        </>
+
+            {showCreateModal && (
+                <Modal title="Create Section" onClose={() => setShowCreateModal(false)}>
+                    <form onSubmit={createSection} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Section Name</label>
+                            <input type="text" value={newSectionName} onChange={e => setNewSectionName(e.target.value)}
+                                placeholder="e.g. Chest, Warm Up..." autoFocus required
+                                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Description <span className="text-gray-500">(optional)</span></label>
+                            <textarea value={newSectionDescription} onChange={e => setNewSectionDescription(e.target.value)} rows="2"
+                                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 resize-none" />
+                        </div>
+                        <div className="flex gap-3 justify-end pt-1">
+                            <button type="button" onClick={() => setShowCreateModal(false)} className="px-4 py-2 rounded-xl text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors text-sm">Cancel</button>
+                            <button type="submit" className="px-5 py-2 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl font-medium text-sm shadow-md transition-all">Create</button>
+                        </div>
+                    </form>
+                </Modal>
+            )}
+
+            {showUpdateModal && (
+                <Modal title="Edit Section" onClose={() => setShowUpdateModal(false)}>
+                    <form onSubmit={updateSection} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Section Name</label>
+                            <input type="text" value={editedName} onChange={e => setEditedName(e.target.value)} autoFocus required
+                                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-1.5">Description <span className="text-gray-500">(optional)</span></label>
+                            <textarea value={editedDescription} onChange={e => setEditedDescription(e.target.value)} rows="2"
+                                className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 resize-none" />
+                        </div>
+                        <div className="flex gap-3 justify-end pt-1">
+                            <button type="button" onClick={() => setShowUpdateModal(false)} className="px-4 py-2 rounded-xl text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors text-sm">Cancel</button>
+                            <button type="submit" className="px-5 py-2 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl font-medium text-sm shadow-md transition-all">Save</button>
+                        </div>
+                    </form>
+                </Modal>
+            )}
+        </div>
     );
 };
 

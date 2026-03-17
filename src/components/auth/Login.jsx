@@ -61,80 +61,57 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-tr from-rose-50 to-white flex items-center justify-center p-4">
-            <div className="max-w-md w-full">
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-rose-100">
-                    <div className="space-y-2">
-                        <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-yellow-600 to-rose-300 bg-clip-text text-transparent">
-                            You are welcome
-                        </h2>
-                        <p className="text-center text-rose-800/60">
-                            New here?{' '}
-                            <Link to='/register' className="text-rose-600 hover:text-yellow-600 font-medium transition-colors">
-                                Create an account
-                            </Link>
-                        </p>
+        <div className="min-h-screen bg-[#0d0d17] flex items-center justify-center p-4 relative overflow-hidden">
+            <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-violet-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="max-w-md w-full relative">
+                <div className="text-center mb-8">
+                    <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-purple-600 to-violet-600 shadow-lg shadow-purple-500/25 mb-4">
+                        <LockKeyhole size={28} className="text-white" />
                     </div>
-                    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                    <h2 className="text-3xl font-bold text-white">Welcome back</h2>
+                    <p className="text-gray-500 mt-2">
+                        New here?{' '}
+                        <Link to='/register' className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+                            Create an account
+                        </Link>
+                    </p>
+                </div>
+                <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl shadow-2xl p-8">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-lg relative" role="alert">
-                                <span className="block sm:inline">{error}</span>
-                            </div>
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm">{error}</div>
                         )}
                         {successMessage && (
-                            <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg relative" role="alert">
-                                <span className="block sm:inline">{successMessage}</span>
-                            </div>
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl text-sm">{successMessage}</div>
                         )}
-                        <div className="space-y-4">
-                            <div className="relative">
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-rose-300">
-                                    <Mail size={20} />
-                                </span>
-                                <input
-                                    type="email"
-                                    required
-                                    className="w-full pl-10 pr-4 py-2 border border-rose-200 rounded-lg focus:ring-2 focus:ring-rose-200 focus:border-rose-300 bg-white/50 placeholder-rose-300"
-                                    placeholder="Email address"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    disabled={loading}
-                                />
-                            </div>
-                            <div className="relative">
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-rose-300">
-                                    <LockKeyhole size={20} />
-                                </span>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    required
-                                    className="w-full pl-10 pr-12 py-2 border border-rose-200 rounded-lg focus:ring-2 focus:ring-rose-200 focus:border-rose-300 bg-white/50 placeholder-rose-300"
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    disabled={loading}
-                                    autoFocus={location.state?.passwordReset}
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-rose-300 hover:text-rose-400"
-                                    onClick={togglePasswordVisibility}
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
-                            </div>
-                            <div className="text-right">
-                                <Link to='/forgot-password' className="text-sm text-rose-600 hover:text-yellow-600 transition-colors">
-                                    Forgot password?
-                                </Link>
-                            </div>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-500">
+                                <Mail size={18} />
+                            </span>
+                            <input type="email" required placeholder="Email address" value={email}
+                                onChange={(e) => setEmail(e.target.value)} disabled={loading}
+                                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
                         </div>
-
-                        <button
-                            type="submit"
-                            className="w-full py-2 px-4 border border-transparent rounded-lg text-white bg-gradient-to-r from-rose-400 to-rose-300 hover:from-rose-500 hover:to-rose-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-300 transition-colors shadow-sm"
-                            disabled={loading}
-                        >
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-500">
+                                <LockKeyhole size={18} />
+                            </span>
+                            <input type={showPassword ? "text" : "password"} required placeholder="Password" value={password}
+                                onChange={(e) => setPassword(e.target.value)} disabled={loading} autoFocus={location.state?.passwordReset}
+                                className="w-full pl-10 pr-12 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
+                            <button type="button" onClick={togglePasswordVisibility}
+                                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-500 hover:text-gray-300">
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+                        <div className="text-right">
+                            <Link to='/forgot-password' className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
+                                Forgot password?
+                            </Link>
+                        </div>
+                        <button type="submit" disabled={loading}
+                            className="w-full py-2.5 px-4 rounded-xl text-white bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 font-semibold shadow-lg shadow-purple-500/20 transition-all disabled:opacity-60">
                             {loading ? 'Signing in...' : 'Sign in'}
                         </button>
                     </form>
