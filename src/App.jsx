@@ -7,6 +7,8 @@ import HomePage from './components/HomePage';
 import FoldersPage from './components/FoldersPage';
 import SectionPage from './components/SectionPage';
 import ExercisePage from './components/ExercisePage';
+import CalendarPage from './components/CalendarPage';
+import MeasurementsPage from './components/MeasurementsPage';
 import ErrorPage from './components/ErrorPage';
 import PublicRoute from './components/auth/PublicRoute';
 import ProtectedRoute from './components/auth/protectedRoute';
@@ -87,6 +89,24 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
   {
+    path: '/calendar',
+    element: (
+      <ProtectedRoute>
+        <CalendarPage />
+      </ProtectedRoute>
+    ),
+    errorElement: <ErrorPage />
+  },
+  {
+    path: '/measurements',
+    element: (
+      <ProtectedRoute>
+        <MeasurementsPage />
+      </ProtectedRoute>
+    ),
+    errorElement: <ErrorPage />
+  },
+  {
     path: '/folder',
     element: <Navigate to="/folders" replace />
   },
@@ -103,7 +123,7 @@ const router = createBrowserRouter([
 const App = () => {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#0d0d17]">
         <RouterProvider router={router} />
       </div>
     </AuthProvider>
