@@ -44,10 +44,8 @@ export default function Login() {
             setSuccessMessage('');
             setLoading(true);
 
-            const { error } = await signIn(email, password);
-            if (error) throw error;
+            await signIn(email, password);
 
-            // If login successful, redirect to home
             navigate('/Home');
         } catch (error) {
             setError(error.message);
@@ -80,7 +78,9 @@ export default function Login() {
                 <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl shadow-2xl p-8">
                     <form className="space-y-5" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm">{error}</div>
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm">
+                                {error}
+                            </div>
                         )}
                         {successMessage && (
                             <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl text-sm">{successMessage}</div>

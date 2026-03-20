@@ -92,16 +92,21 @@ export const AuthProvider = ({ children }) => {
 
     const signUp = async (email, password) => {
         try {
-            const data = await pb.collection('users').create({
+            await pb.collection('users').create({
                 email,
                 password,
                 passwordConfirm: password
             });
-            setUser(data.record);
-            return data;
+            // Send verification email — do NOT sign in yet
+            await pb.collection('users').requestVerification(email);
+            return { needsVerification: true };
         } catch (error) {
             throw error;
         }
+    };
+
+    const resendVerification = async (email) => {
+        await pb.collection('users').requestVerification(email);
     };
 
     const signIn = async (email, password) => {
@@ -124,6 +129,7 @@ export const AuthProvider = ({ children }) => {
         signUp,
         signIn,
         signOut,
+        resendVerification,
         pb,
         loading
     };

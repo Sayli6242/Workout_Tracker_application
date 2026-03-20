@@ -1,7 +1,7 @@
 
 
 import axios from 'axios';
-import { pb } from '../lib/pocketBase';
+import { pb } from './pocketBase';
 
 const axiosInstance = axios.create({
     // baseURL: 'https://fastapibackend-0kb9.onrender.com/api'  // Add this line

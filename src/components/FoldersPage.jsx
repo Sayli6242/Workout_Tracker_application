@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, ArrowLeft, Trash2, Pencil, FolderOpen, X, Folder } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthContext';
-import Navbar from './Navbar';
+import Navbar, { saveRecentFolder } from './Navbar';
 import axiosInstance from '../lib/axiosConfig';
 
 const FoldersPage = () => {
@@ -118,7 +118,7 @@ const FoldersPage = () => {
                             return (
                                 <div
                                     key={folder.id}
-                                    onClick={() => navigate(`/folders/${folder.id}/sections`)}
+                                    onClick={() => { saveRecentFolder(folder.id, folder.name); navigate(`/folders/${folder.id}/sections`); }}
                                     className="group bg-[#1a1a2e] border border-white/5 rounded-2xl p-5 cursor-pointer hover:border-purple-500/30 hover:bg-[#1e1e35] transition-all duration-300 relative overflow-hidden"
                                 >
                                     {/* Accent top bar */}

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, ArrowLeft, X, ChevronDown, ChevronUp, Trophy, BarChart2, Trash2, Pencil, Dumbbell, ClipboardList } from 'lucide-react';
+import { Plus, ArrowLeft, X, ChevronDown, ChevronUp, Trophy, BarChart2, Trash2, Pencil, Dumbbell, ClipboardList, ImagePlus, Check, ChevronRight } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
@@ -15,42 +15,121 @@ const getImageUrl = (exercise) => {
     return null;
 };
 
-const Modal = ({ title, onClose, children, wide }) => (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className={`bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full ${wide ? 'max-w-lg' : 'max-w-md'} shadow-2xl max-h-[90vh] overflow-y-auto`}>
-            <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-semibold text-white">{title}</h2>
-                <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-                    <X className="w-4 h-4" />
-                </button>
-            </div>
-            {children}
-        </div>
-    </div>
-);
+const inputCls = "w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 text-sm";
+const labelCls = "block text-xs font-medium text-gray-400 mb-1";
 
-const inputCls = "w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30";
-const labelCls = "block text-sm font-medium text-gray-300 mb-1.5";
+// Inline add/edit form embedded as a card
+const ExerciseForm = ({ initial, onSave, onCancel, saving }) => {
+    const [name, setName] = useState(initial?.name || '');
+    const [desc, setDesc] = useState(initial?.description || '');
+    const [image, setImage] = useState(null);
+    const [preview, setPreview] = useState(null);
+    const nameRef = useRef(null);
+
+    useEffect(() => { nameRef.current?.focus(); }, []);
+
+    const handleImage = (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        setImage(f);
+        setPreview(URL.createObjectURL(f));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!name.trim()) return;
+        onSave({ name, description: desc, image });
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="bg-[#1a1a2e] border border-purple-500/30 rounded-2xl overflow-hidden shadow-lg shadow-purple-500/10">
+            <div className="h-0.5 bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500" />
+            <div className="p-5 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                    <div className="p-1.5 rounded-lg bg-purple-600/20">
+                        <Dumbbell className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <span className="text-sm font-semibold text-white">{initial ? 'Edit Exercise' : 'New Exercise'}</span>
+                </div>
+
+                {/* Name */}
+                <div>
+                    <label className={labelCls}>Exercise name <span className="text-red-400">*</span></label>
+                    <input
+                        ref={nameRef}
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        placeholder="e.g. Bench Press, Squat…"
+                        required
+                        className={inputCls}
+                    />
+                </div>
+
+                {/* Description */}
+                <div>
+                    <label className={labelCls}>Description <span className="text-gray-600">(optional)</span></label>
+                    <textarea
+                        value={desc}
+                        onChange={e => setDesc(e.target.value)}
+                        rows={2}
+                        placeholder="Form tips, muscles targeted…"
+                        className={`${inputCls} resize-none`}
+                    />
+                </div>
+
+                {/* Image */}
+                <div>
+                    <label className={labelCls}>Image <span className="text-gray-600">(optional)</span></label>
+                    <label className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-purple-500/30 transition-colors group w-fit">
+                        <ImagePlus className="w-4 h-4 text-gray-500 group-hover:text-purple-400 transition-colors" />
+                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">{image ? image.name : 'Choose image…'}</span>
+                        <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
+                    </label>
+                    {preview && (
+                        <img src={preview} alt="preview" className="mt-2 h-24 rounded-lg object-cover border border-white/10" />
+                    )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-1">
+                    <button
+                        type="submit"
+                        disabled={saving || !name.trim()}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 disabled:opacity-50 text-white rounded-xl text-sm font-medium shadow-md transition-all"
+                    >
+                        <Check className="w-3.5 h-3.5" />
+                        {saving ? 'Saving…' : (initial ? 'Save Changes' : 'Add Exercise')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl text-sm transition-colors"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </form>
+    );
+};
 
 const ExercisePage = () => {
     const { folderId, sectionId } = useParams();
     const navigate = useNavigate();
     const [exercises, setExercises] = useState([]);
     const [sectionName, setSectionName] = useState('');
+    const [folderName, setFolderName] = useState('');
 
-    // Create/edit exercise
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // Add / edit
+    const [showAddForm, setShowAddForm] = useState(false);
     const [editingExercise, setEditingExercise] = useState(null);
-    const [newExerciseName, setNewExerciseName] = useState('');
-    const [description, setDescription] = useState('');
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [formSaving, setFormSaving] = useState(false);
 
-    // Log workout
-    const [logModalExercise, setLogModalExercise] = useState(null);
-    const [logSets, setLogSets] = useState('');
-    const [logReps, setLogReps] = useState('');
-    const [logWeight, setLogWeight] = useState('');
-    const [logNotes, setLogNotes] = useState('');
+    // Per-exercise inline log forms
+    const [showLogForm, setShowLogForm] = useState({});
+    const [logForms, setLogForms] = useState({});
+    const [logSaving, setLogSaving] = useState({});
 
     // Per-exercise data
     const [exerciseLogs, setExerciseLogs] = useState({});
@@ -59,9 +138,17 @@ const ExercisePage = () => {
     const [showChart, setShowChart] = useState({});
 
     useEffect(() => {
+        fetchFolderDetails();
         fetchSectionDetails();
         fetchExercises();
     }, [folderId, sectionId]);
+
+    const fetchFolderDetails = async () => {
+        try {
+            const r = await axios.get(`/folders/${folderId}/`);
+            setFolderName(r.data.name);
+        } catch (e) { console.error(e); }
+    };
 
     const fetchSectionDetails = async () => {
         try {
@@ -108,55 +195,38 @@ const ExercisePage = () => {
         if (next && !chartData[id]) fetchChartData(id);
     };
 
-    const resetForm = () => { setNewExerciseName(''); setDescription(''); setSelectedImage(null); setEditingExercise(null); };
-
-    const createExercise = async (e) => {
-        e.preventDefault();
-        const fd = new FormData();
-        fd.append('name', newExerciseName);
-        fd.append('description', description || '');
-        if (selectedImage) fd.append('image', selectedImage);
-        try {
-            await axios.post(`/folders/${folderId}/sections/${sectionId}/exercises/`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-            fetchExercises(); resetForm(); setIsModalOpen(false);
-        } catch (e) { console.error(e); }
+    const toggleLogForm = (id) => {
+        const next = !showLogForm[id];
+        setShowLogForm(prev => ({ ...prev, [id]: next }));
+        if (next && !logForms[id]) {
+            setLogForms(prev => ({ ...prev, [id]: { sets: '', reps: '', weight_kg: '', notes: '' } }));
+        }
     };
 
-    const updateExercise = async (e) => {
-        e.preventDefault();
-        const fd = new FormData();
-        fd.append('name', newExerciseName);
-        fd.append('description', description || '');
-        if (selectedImage) fd.append('image', selectedImage);
-        try {
-            await axios.put(`/folders/${folderId}/sections/${sectionId}/exercises/${editingExercise.id}/`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-            fetchExercises(); resetForm(); setIsModalOpen(false);
-        } catch (e) { console.error(e); }
+    const updateLogForm = (id, field, value) => {
+        setLogForms(prev => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
     };
 
-    const deleteExercise = async (id) => {
-        try {
-            await axios.delete(`/folders/${folderId}/sections/${sectionId}/exercises/${id}/`);
-            setExercises(exercises.filter(ex => ex.id !== id));
-        } catch (e) { console.error(e); }
-    };
-
-    const submitLog = async (e) => {
-        e.preventDefault();
+    const submitLog = async (exerciseId) => {
+        const form = logForms[exerciseId] || {};
+        if (!form.sets || !form.reps || !form.weight_kg) return;
+        setLogSaving(prev => ({ ...prev, [exerciseId]: true }));
         try {
             await axios.post('/exercise-logs/', {
-                exercise_id: logModalExercise.id,
-                sets: parseInt(logSets),
-                reps: parseInt(logReps),
-                weight_kg: parseFloat(logWeight),
-                notes: logNotes,
+                exercise_id: exerciseId,
+                sets: parseInt(form.sets),
+                reps: parseInt(form.reps),
+                weight_kg: parseFloat(form.weight_kg),
+                notes: form.notes || '',
                 logged_at: new Date().toISOString(),
             });
-            fetchExerciseLogs(logModalExercise.id);
-            fetchExercisePR(logModalExercise.id);
-            if (showChart[logModalExercise.id]) fetchChartData(logModalExercise.id);
-            setLogModalExercise(null);
+            fetchExerciseLogs(exerciseId);
+            fetchExercisePR(exerciseId);
+            if (showChart[exerciseId]) fetchChartData(exerciseId);
+            setLogForms(prev => ({ ...prev, [exerciseId]: { sets: '', reps: '', weight_kg: '', notes: '' } }));
+            setShowLogForm(prev => ({ ...prev, [exerciseId]: false }));
         } catch (e) { console.error(e); }
+        setLogSaving(prev => ({ ...prev, [exerciseId]: false }));
     };
 
     const deleteLog = async (logId, exerciseId) => {
@@ -164,6 +234,41 @@ const ExercisePage = () => {
             await axios.delete(`/exercise-logs/${logId}/`);
             fetchExerciseLogs(exerciseId);
             fetchExercisePR(exerciseId);
+        } catch (e) { console.error(e); }
+    };
+
+    const handleSaveNew = async ({ name, description, image }) => {
+        setFormSaving(true);
+        const fd = new FormData();
+        fd.append('name', name);
+        fd.append('description', description || '');
+        if (image) fd.append('image', image);
+        try {
+            await axios.post(`/folders/${folderId}/sections/${sectionId}/exercises/`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            fetchExercises();
+            setShowAddForm(false);
+        } catch (e) { console.error(e); }
+        setFormSaving(false);
+    };
+
+    const handleSaveEdit = async ({ name, description, image }) => {
+        setFormSaving(true);
+        const fd = new FormData();
+        fd.append('name', name);
+        fd.append('description', description || '');
+        if (image) fd.append('image', image);
+        try {
+            await axios.put(`/folders/${folderId}/sections/${sectionId}/exercises/${editingExercise.id}/`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            fetchExercises();
+            setEditingExercise(null);
+        } catch (e) { console.error(e); }
+        setFormSaving(false);
+    };
+
+    const deleteExercise = async (id) => {
+        try {
+            await axios.delete(`/folders/${folderId}/sections/${sectionId}/exercises/${id}/`);
+            setExercises(exercises.filter(ex => ex.id !== id));
         } catch (e) { console.error(e); }
     };
 
@@ -177,6 +282,15 @@ const ExercisePage = () => {
             </div>
 
             <div className="relative max-w-4xl mx-auto px-4 py-8">
+                {/* Breadcrumb */}
+                <nav className="flex items-center gap-1.5 text-sm mb-5 text-gray-500">
+                    <button onClick={() => navigate('/folders')} className="hover:text-purple-400 transition-colors">Folders</button>
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-700 shrink-0" />
+                    <button onClick={() => navigate(`/folders/${folderId}/sections`)} className="hover:text-purple-400 transition-colors truncate max-w-[140px]">{folderName || '…'}</button>
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-700 shrink-0" />
+                    <span className="text-gray-300 truncate max-w-[160px]">{sectionName || '…'}</span>
+                </nav>
+
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
@@ -190,23 +304,41 @@ const ExercisePage = () => {
                         <h1 className="text-3xl font-bold text-white">{sectionName || 'Loading...'}</h1>
                         <p className="text-gray-500 mt-1">{exercises.length} exercise{exercises.length !== 1 ? 's' : ''}</p>
                     </div>
-                    <button
-                        onClick={() => { resetForm(); setIsModalOpen(true); }}
-                        className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/20 transition-all w-full sm:w-auto"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Add Exercise
-                    </button>
+                    {!showAddForm && (
+                        <button
+                            onClick={() => { setEditingExercise(null); setShowAddForm(true); }}
+                            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/20 transition-all w-full sm:w-auto"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Add Exercise
+                        </button>
+                    )}
                 </div>
 
+                {/* Inline add form */}
+                {showAddForm && (
+                    <div className="mb-6">
+                        <ExerciseForm
+                            onSave={handleSaveNew}
+                            onCancel={() => setShowAddForm(false)}
+                            saving={formSaving}
+                        />
+                    </div>
+                )}
+
                 {/* Exercise cards */}
-                {exercises.length === 0 ? (
+                {exercises.length === 0 && !showAddForm ? (
                     <div className="flex flex-col items-center justify-center py-32 text-center">
                         <div className="p-6 rounded-2xl bg-white/5 border border-white/10 mb-4">
                             <Dumbbell className="w-12 h-12 text-gray-600" />
                         </div>
                         <p className="text-gray-400 text-lg mb-2">No exercises yet</p>
-                        <p className="text-gray-600 text-sm">Add your first exercise to this section</p>
+                        <button
+                            onClick={() => setShowAddForm(true)}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl font-medium text-sm shadow-md mt-2"
+                        >
+                            <Plus className="w-4 h-4" /> Add your first exercise
+                        </button>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -215,10 +347,25 @@ const ExercisePage = () => {
                             const logs = exerciseLogs[exercise.id] || [];
                             const chart = chartData[exercise.id] || [];
                             const isChartOpen = showChart[exercise.id];
+                            const isLogOpen = showLogForm[exercise.id];
+                            const form = logForms[exercise.id] || { sets: '', reps: '', weight_kg: '', notes: '' };
+                            const saving = logSaving[exercise.id];
+                            const isEditing = editingExercise?.id === exercise.id;
+
+                            if (isEditing) {
+                                return (
+                                    <ExerciseForm
+                                        key={exercise.id}
+                                        initial={exercise}
+                                        onSave={handleSaveEdit}
+                                        onCancel={() => setEditingExercise(null)}
+                                        saving={formSaving}
+                                    />
+                                );
+                            }
 
                             return (
                                 <div key={exercise.id} className="bg-[#1a1a2e] border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/20 transition-all duration-300">
-                                    {/* Top accent */}
                                     <div className="h-0.5 bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500" />
 
                                     <div className="p-6">
@@ -252,6 +399,54 @@ const ExercisePage = () => {
                                         {/* Description */}
                                         {exercise.description && (
                                             <p className="text-gray-400 text-sm mb-4 leading-relaxed">{exercise.description}</p>
+                                        )}
+
+                                        {/* Inline log form */}
+                                        {isLogOpen && (
+                                            <div className="mb-4 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
+                                                <p className="text-xs font-medium text-emerald-400 uppercase tracking-wider mb-3">Log a Set</p>
+                                                <div className="grid grid-cols-3 gap-2 mb-2">
+                                                    {[['Sets', 'sets', '3', '1'], ['Reps', 'reps', '10', '1'], ['Weight (kg)', 'weight_kg', '60', '0.5']].map(([lbl, key, ph, step]) => (
+                                                        <div key={key}>
+                                                            <label className={labelCls}>{lbl}</label>
+                                                            <input
+                                                                type="number" min="0" step={step}
+                                                                value={form[key]}
+                                                                onChange={e => updateLogForm(exercise.id, key, e.target.value)}
+                                                                placeholder={ph}
+                                                                onKeyDown={e => e.key === 'Enter' && submitLog(exercise.id)}
+                                                                className={inputCls}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="mb-3">
+                                                    <label className={labelCls}>Notes <span className="text-gray-600">(optional)</span></label>
+                                                    <input
+                                                        type="text"
+                                                        value={form.notes}
+                                                        onChange={e => updateLogForm(exercise.id, 'notes', e.target.value)}
+                                                        placeholder="How did it feel?"
+                                                        onKeyDown={e => e.key === 'Enter' && submitLog(exercise.id)}
+                                                        className={inputCls}
+                                                    />
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => submitLog(exercise.id)}
+                                                        disabled={saving || !form.sets || !form.reps || !form.weight_kg}
+                                                        className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+                                                    >
+                                                        {saving ? 'Saving…' : 'Save'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => toggleLogForm(exercise.id)}
+                                                        className="px-4 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg text-sm transition-colors"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
                                         )}
 
                                         {/* Recent logs */}
@@ -321,22 +516,18 @@ const ExercisePage = () => {
                                         {/* Actions */}
                                         <div className="flex items-center gap-2 pt-2 border-t border-white/5">
                                             <button
-                                                onClick={() => {
-                                                    setLogModalExercise(exercise);
-                                                    setLogSets(''); setLogReps(''); setLogWeight(''); setLogNotes('');
-                                                }}
-                                                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 rounded-lg text-sm font-medium transition-all"
+                                                onClick={() => toggleLogForm(exercise.id)}
+                                                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
+                                                    isLogOpen
+                                                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                                                        : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300'
+                                                }`}
                                             >
                                                 <ClipboardList className="w-4 h-4" />
-                                                Track Sets
+                                                {isLogOpen ? 'Cancel' : 'Track Sets'}
                                             </button>
                                             <button
-                                                onClick={() => {
-                                                    setEditingExercise(exercise);
-                                                    setNewExerciseName(exercise.name);
-                                                    setDescription(exercise.description || '');
-                                                    setIsModalOpen(true);
-                                                }}
+                                                onClick={() => { setShowAddForm(false); setEditingExercise(exercise); }}
                                                 className="flex items-center gap-1.5 px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-all"
                                             >
                                                 <Pencil className="w-4 h-4" />
@@ -357,67 +548,6 @@ const ExercisePage = () => {
                     </div>
                 )}
             </div>
-
-            {/* Create / Edit Exercise Modal */}
-            {isModalOpen && (
-                <Modal title={editingExercise ? 'Edit Exercise' : 'Add Exercise'} onClose={() => { setIsModalOpen(false); resetForm(); }}>
-                    <form onSubmit={editingExercise ? updateExercise : createExercise} className="space-y-4">
-                        <div>
-                            <label className={labelCls}>Exercise Name</label>
-                            <input type="text" value={newExerciseName} onChange={e => setNewExerciseName(e.target.value)}
-                                placeholder="e.g. Bench Press" required autoFocus className={inputCls} />
-                        </div>
-                        <div>
-                            <label className={labelCls}>Image <span className="text-gray-500">(optional)</span></label>
-                            <input type="file" accept="image/*" onChange={e => setSelectedImage(e.target.files[0])}
-                                className="w-full text-sm text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-purple-600/20 file:text-purple-300 hover:file:bg-purple-600/30 file:cursor-pointer" />
-                        </div>
-                        <div>
-                            <label className={labelCls}>Description <span className="text-gray-500">(optional)</span></label>
-                            <textarea value={description} onChange={e => setDescription(e.target.value)} rows="3"
-                                placeholder="Notes on form, muscles targeted..." className={`${inputCls} resize-none`} />
-                        </div>
-                        <div className="flex gap-3 justify-end pt-1">
-                            <button type="button" onClick={() => { setIsModalOpen(false); resetForm(); }}
-                                className="px-4 py-2 rounded-xl text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors text-sm">Cancel</button>
-                            <button type="submit"
-                                className="px-5 py-2 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl font-medium text-sm shadow-md transition-all">
-                                {editingExercise ? 'Save Changes' : 'Add Exercise'}
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
-            )}
-
-            {/* Log Workout Modal */}
-            {logModalExercise && (
-                <Modal title={`Track Sets — ${logModalExercise.name}`} onClose={() => setLogModalExercise(null)}>
-                    <form onSubmit={submitLog} className="space-y-4">
-                        <div className="grid grid-cols-3 gap-3">
-                            {[['Sets', logSets, setLogSets, '3'], ['Reps', logReps, setLogReps, '10'], ['Weight (kg)', logWeight, setLogWeight, '60']].map(([lbl, val, setter, ph]) => (
-                                <div key={lbl}>
-                                    <label className={labelCls}>{lbl}</label>
-                                    <input type="number" min="0" step={lbl === 'Weight (kg)' ? '0.5' : '1'} value={val}
-                                        onChange={e => setter(e.target.value)} placeholder={ph} required className={inputCls} />
-                                </div>
-                            ))}
-                        </div>
-                        <div>
-                            <label className={labelCls}>Notes <span className="text-gray-500">(optional)</span></label>
-                            <input type="text" value={logNotes} onChange={e => setLogNotes(e.target.value)}
-                                placeholder="How did it feel?" className={inputCls} />
-                        </div>
-                        <div className="flex gap-3 justify-end pt-1">
-                            <button type="button" onClick={() => setLogModalExercise(null)}
-                                className="px-4 py-2 rounded-xl text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors text-sm">Cancel</button>
-                            <button type="submit"
-                                className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-medium text-sm shadow-md transition-all">
-                                Save
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
-            )}
         </div>
     );
 };

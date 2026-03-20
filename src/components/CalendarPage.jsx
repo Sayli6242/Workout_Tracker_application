@@ -91,7 +91,7 @@ const CalendarPage = () => {
     const uniqueDays = workedOutDates.size;
 
     return (
-        <div className="min-h-screen bg-[#0d0d17] text-white lg:ml-60 pt-14 lg:pt-0">
+        <div className="min-h-screen bg-[#0d0d17] text-white lg:ml-60 pt-14 pb-16 lg:pt-0 lg:pb-0">
             <Navbar />
 
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
