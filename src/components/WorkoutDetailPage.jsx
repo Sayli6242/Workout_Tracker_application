@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, ArrowLeft, Trash2, Pencil, Dumbbell, ClipboardList, BarChart2, ChevronDown, ChevronUp, Trophy, Check, X, ImagePlus } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, Pencil, Dumbbell, ClipboardList, BarChart2, ChevronDown, ChevronUp, Trophy, Check, X, ImagePlus, PlayCircle, CheckCircle2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import axios from '../lib/axiosConfig';
 import Navbar from './Navbar';
@@ -16,7 +16,26 @@ const getImageUrl = (ex) => {
 const inputCls = "w-full px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 text-sm";
 const labelCls = "block text-xs font-medium text-gray-400 mb-1";
 
-// Inline exercise add/edit form
+// ── Workout type metadata ──────────────────────────────────────────────────────
+const TYPE_META = {
+    hiit:               { label: 'HIIT',               category: 'Cardio',  emoji: '🔥', bg: 'bg-orange-500/10 border-orange-500/30 text-orange-300',   sel: 'bg-orange-500/30 border-orange-400 text-orange-200' },
+    gym:                { label: 'Gym Workout',         category: 'Gym',     emoji: '🏋️', bg: 'bg-blue-500/10 border-blue-500/30 text-blue-300',         sel: 'bg-blue-500/30 border-blue-400 text-blue-200' },
+    machine:            { label: 'Machine',             category: 'Gym',     emoji: '⚙️', bg: 'bg-blue-500/10 border-blue-500/30 text-blue-300',         sel: 'bg-blue-500/30 border-blue-400 text-blue-200' },
+    equipment:          { label: 'Equipment',           category: 'Gym',     emoji: '🪆', bg: 'bg-blue-500/10 border-blue-500/30 text-blue-300',         sel: 'bg-blue-500/30 border-blue-400 text-blue-200' },
+    beginner:           { label: 'Beginner',            category: 'General', emoji: '🌱', bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300', sel: 'bg-emerald-500/30 border-emerald-400 text-emerald-200' },
+    intermediate:       { label: 'Intermediate',        category: 'General', emoji: '💪', bg: 'bg-purple-500/10 border-purple-500/30 text-purple-300',   sel: 'bg-purple-500/30 border-purple-400 text-purple-200' },
+    pro:                { label: 'Pro / Advanced',      category: 'General', emoji: '🏆', bg: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300',   sel: 'bg-yellow-500/30 border-yellow-400 text-yellow-200' },
+    yoga:               { label: 'Yoga',                category: 'Yoga',    emoji: '🧘', bg: 'bg-teal-500/10 border-teal-500/30 text-teal-300',         sel: 'bg-teal-500/30 border-teal-400 text-teal-200' },
+    mat_yoga:           { label: 'Mat Yoga',            category: 'Yoga',    emoji: '🪷', bg: 'bg-teal-500/10 border-teal-500/30 text-teal-300',         sel: 'bg-teal-500/30 border-teal-400 text-teal-200' },
+    beginner_yoga:      { label: 'Beginner Yoga',       category: 'Yoga',    emoji: '🌿', bg: 'bg-teal-500/10 border-teal-500/30 text-teal-300',         sel: 'bg-teal-500/30 border-teal-400 text-teal-200' },
+    intermediate_yoga:  { label: 'Intermediate Yoga',   category: 'Yoga',    emoji: '☯️', bg: 'bg-teal-500/10 border-teal-500/30 text-teal-300',         sel: 'bg-teal-500/30 border-teal-400 text-teal-200' },
+    morning_yoga:       { label: 'Morning Yoga',        category: 'Yoga',    emoji: '🌅', bg: 'bg-teal-500/10 border-teal-500/30 text-teal-300',         sel: 'bg-teal-500/30 border-teal-400 text-teal-200' },
+    relaxation_yoga:    { label: 'Relaxation Yoga',     category: 'Yoga',    emoji: '😌', bg: 'bg-teal-500/10 border-teal-500/30 text-teal-300',         sel: 'bg-teal-500/30 border-teal-400 text-teal-200' },
+    stress_relief_yoga: { label: 'Stress Relief Yoga',  category: 'Yoga',    emoji: '🌊', bg: 'bg-teal-500/10 border-teal-500/30 text-teal-300',         sel: 'bg-teal-500/30 border-teal-400 text-teal-200' },
+};
+const CATEGORIES = ['Cardio', 'Gym', 'General', 'Yoga'];
+
+// ── Exercise add/edit form ─────────────────────────────────────────────────────
 const ExerciseForm = ({ initial, onSave, onCancel, saving }) => {
     const [name, setName] = useState(initial?.name || '');
     const [desc, setDesc] = useState(initial?.description || '');
@@ -45,13 +64,10 @@ const ExerciseForm = ({ initial, onSave, onCancel, saving }) => {
                     </div>
                     <span className="text-sm font-semibold text-white">{initial ? 'Edit Exercise' : 'Add Exercise'}</span>
                 </div>
-
                 <div>
                     <label className={labelCls}>Exercise name <span className="text-red-400">*</span></label>
                     <input ref={nameRef} type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Bench Press, Squat…" required className={inputCls} />
                 </div>
-
-                {/* Target sets × reps */}
                 <div className="flex items-center gap-3">
                     <div className="flex-1">
                         <label className={labelCls}>Target sets</label>
@@ -63,12 +79,10 @@ const ExerciseForm = ({ initial, onSave, onCancel, saving }) => {
                         <input type="number" min="1" max="100" value={targetReps} onChange={e => setTargetReps(e.target.value)} className={inputCls} />
                     </div>
                 </div>
-
                 <div>
                     <label className={labelCls}>Description <span className="text-gray-600">(optional)</span></label>
                     <textarea value={desc} onChange={e => setDesc(e.target.value)} rows={2} placeholder="Form tips, muscles targeted…" className={`${inputCls} resize-none`} />
                 </div>
-
                 <div>
                     <label className={labelCls}>Image <span className="text-gray-600">(optional)</span></label>
                     <label className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-purple-500/30 transition-colors group w-fit">
@@ -78,21 +92,111 @@ const ExerciseForm = ({ initial, onSave, onCancel, saving }) => {
                     </label>
                     {preview && <img src={preview} alt="preview" className="mt-2 h-24 rounded-lg object-cover border border-white/10" />}
                 </div>
-
                 <div className="flex gap-2 pt-1">
                     <button type="submit" disabled={saving || !name.trim()} className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 disabled:opacity-50 text-white rounded-xl text-sm font-medium shadow-md transition-all">
                         <Check className="w-3.5 h-3.5" />
                         {saving ? 'Saving…' : (initial ? 'Save Changes' : 'Add Exercise')}
                     </button>
-                    <button type="button" onClick={onCancel} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl text-sm transition-colors">
-                        Cancel
-                    </button>
+                    <button type="button" onClick={onCancel} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl text-sm transition-colors">Cancel</button>
                 </div>
             </div>
         </form>
     );
 };
 
+// ── Session type picker panel ──────────────────────────────────────────────────
+const SessionPanel = ({ workoutName, onSave, onCancel, saving }) => {
+    const [selectedType, setSelectedType] = useState('');
+    const [notes, setNotes] = useState('');
+
+    const grouped = CATEGORIES.reduce((acc, cat) => {
+        acc[cat] = Object.entries(TYPE_META).filter(([, m]) => m.category === cat);
+        return acc;
+    }, {});
+
+    return (
+        <div className="bg-[#1a1a2e] border border-indigo-500/30 rounded-2xl overflow-hidden shadow-xl shadow-indigo-500/10 mb-6">
+            <div className="h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500" />
+            <div className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-indigo-600/20">
+                            <PlayCircle className="w-4 h-4 text-indigo-400" />
+                        </div>
+                        <div>
+                            <p className="text-white font-semibold text-sm">Start Session</p>
+                            <p className="text-gray-500 text-xs">{workoutName} — pick a workout type</p>
+                        </div>
+                    </div>
+                    <button onClick={onCancel} className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Type grid by category */}
+                <div className="space-y-4 mb-4">
+                    {CATEGORIES.map(cat => (
+                        <div key={cat}>
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">{cat}</p>
+                            <div className="flex flex-wrap gap-2">
+                                {grouped[cat].map(([key, meta]) => {
+                                    const isSelected = selectedType === key;
+                                    return (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            onClick={() => setSelectedType(isSelected ? '' : key)}
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm font-medium transition-all ${isSelected ? meta.sel + ' ring-1 ring-offset-0 ring-white/20 scale-105' : meta.bg} hover:opacity-90`}
+                                        >
+                                            <span>{meta.emoji}</span>
+                                            <span>{meta.label}</span>
+                                            {isSelected && <Check className="w-3 h-3 ml-0.5" />}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Notes */}
+                <div className="mb-4">
+                    <label className={labelCls}>Notes <span className="text-gray-600">(optional)</span></label>
+                    <input
+                        type="text"
+                        value={notes}
+                        onChange={e => setNotes(e.target.value)}
+                        placeholder="How are you feeling today?"
+                        className={inputCls}
+                    />
+                </div>
+
+                {/* Selected type preview */}
+                {selectedType && (
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border mb-4 ${TYPE_META[selectedType].bg}`}>
+                        <span className="text-base">{TYPE_META[selectedType].emoji}</span>
+                        <span className="text-sm font-medium">{TYPE_META[selectedType].label}</span>
+                        <span className="text-xs opacity-60 ml-auto">{TYPE_META[selectedType].category}</span>
+                    </div>
+                )}
+
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => onSave(selectedType, notes)}
+                        disabled={saving}
+                        className="flex items-center gap-1.5 px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white rounded-xl text-sm font-semibold shadow-md transition-all"
+                    >
+                        <PlayCircle className="w-4 h-4" />
+                        {saving ? 'Starting…' : 'Start Session'}
+                    </button>
+                    <button onClick={onCancel} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl text-sm transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ── Main component ─────────────────────────────────────────────────────────────
 const WorkoutDetailPage = () => {
     const { workoutId } = useParams();
     const navigate = useNavigate();
@@ -104,6 +208,11 @@ const WorkoutDetailPage = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingExercise, setEditingExercise] = useState(null);
     const [formSaving, setFormSaving] = useState(false);
+
+    // Session panel
+    const [showSessionPanel, setShowSessionPanel] = useState(false);
+    const [sessionSaving, setSessionSaving] = useState(false);
+    const [sessionCreated, setSessionCreated] = useState(false);
 
     // Per-exercise inline log forms
     const [showLogForm, setShowLogForm] = useState({});
@@ -127,7 +236,6 @@ const WorkoutDetailPage = () => {
             setWorkoutName(folderRes.data.name);
             const sid = sectionsRes.data[0]?.id;
             if (!sid) {
-                // Create default section if missing
                 const newSec = await axios.post(`/folders/${workoutId}/sections/`, { name: folderRes.data.name });
                 setSectionId(newSec.data.id);
                 fetchExercises(workoutId, newSec.data.id);
@@ -257,6 +365,22 @@ const WorkoutDetailPage = () => {
         } catch (e) {}
     };
 
+    const handleStartSession = async (workoutType, notes) => {
+        setSessionSaving(true);
+        try {
+            await axios.post('/workout-sessions/', {
+                workout_id: workoutId,
+                workout_name: workoutName,
+                workout_type: workoutType || null,
+                notes: notes || '',
+            });
+            setShowSessionPanel(false);
+            setSessionCreated(true);
+            setTimeout(() => setSessionCreated(false), 4000);
+        } catch (e) { console.error(e); }
+        setSessionSaving(false);
+    };
+
     return (
         <div className="min-h-screen bg-[#0d0d17] text-white lg:ml-60 pt-14 pb-16 lg:pt-0 lg:pb-0">
             <Navbar />
@@ -275,15 +399,46 @@ const WorkoutDetailPage = () => {
                         <h1 className="text-3xl font-bold text-white">{workoutName || '…'}</h1>
                         <p className="text-gray-500 mt-1">{exercises.length} exercise{exercises.length !== 1 ? 's' : ''}</p>
                     </div>
-                    {!showAddForm && !editingExercise && (
-                        <button
-                            onClick={() => setShowAddForm(true)}
-                            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/20 transition-all w-full sm:w-auto"
-                        >
-                            <Plus className="w-4 h-4" /> Add Exercise
-                        </button>
-                    )}
+                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        {/* Start Session button */}
+                        {!showSessionPanel && (
+                            <button
+                                onClick={() => { setShowSessionPanel(true); setShowAddForm(false); }}
+                                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/20 transition-all w-full sm:w-auto"
+                            >
+                                <PlayCircle className="w-4 h-4" />
+                                Start Session
+                            </button>
+                        )}
+                        {!showAddForm && !editingExercise && !showSessionPanel && (
+                            <button
+                                onClick={() => setShowAddForm(true)}
+                                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/20 transition-all w-full sm:w-auto"
+                            >
+                                <Plus className="w-4 h-4" /> Add Exercise
+                            </button>
+                        )}
+                    </div>
                 </div>
+
+                {/* Session created toast */}
+                {sessionCreated && (
+                    <div className="flex items-center gap-3 mb-6 px-4 py-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                        <p className="text-emerald-300 text-sm font-medium">Session started! You can view it in <button onClick={() => navigate('/history')} className="underline hover:text-white transition-colors">History</button>.</p>
+                        <button onClick={() => setSessionCreated(false)} className="ml-auto text-emerald-500 hover:text-emerald-300"><X className="w-4 h-4" /></button>
+                    </div>
+                )}
+
+                {/* Session type picker */}
+                {showSessionPanel && (
+                    <SessionPanel
+                        workoutName={workoutName}
+                        onSave={handleStartSession}
+                        onCancel={() => setShowSessionPanel(false)}
+                        saving={sessionSaving}
+                    />
+                )}
 
                 {/* Inline add form */}
                 {showAddForm && (
@@ -333,7 +488,6 @@ const WorkoutDetailPage = () => {
                             <div key={exercise.id} className="bg-[#1a1a2e] border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/20 transition-all duration-300">
                                 <div className="h-0.5 bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500" />
                                 <div className="p-6">
-                                    {/* Title row */}
                                     <div className="flex items-start justify-between gap-4 mb-3">
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className="p-2 rounded-xl bg-gradient-to-br from-purple-600 to-violet-600 shadow-md shrink-0">
@@ -354,17 +508,14 @@ const WorkoutDetailPage = () => {
                                         )}
                                     </div>
 
-                                    {/* Image */}
                                     {getImageUrl(exercise) && (
                                         <img src={getImageUrl(exercise)} alt={exercise.name} className="w-full max-h-64 object-contain rounded-xl bg-black/20 mb-4" />
                                     )}
 
-                                    {/* Description */}
                                     {exercise.description && (
                                         <p className="text-gray-400 text-sm mb-4 leading-relaxed">{exercise.description}</p>
                                     )}
 
-                                    {/* Inline log form */}
                                     {isLogOpen && (
                                         <div className="mb-4 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl">
                                             <p className="text-xs font-medium text-emerald-400 uppercase tracking-wider mb-3">Log a Set</p>
@@ -390,14 +541,11 @@ const WorkoutDetailPage = () => {
                                                 <button onClick={() => submitLog(exercise.id)} disabled={saving || !form.weight_kg} className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors">
                                                     {saving ? 'Saving…' : 'Save'}
                                                 </button>
-                                                <button onClick={() => toggleLogForm(exercise.id, exercise)} className="px-4 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg text-sm transition-colors">
-                                                    Cancel
-                                                </button>
+                                                <button onClick={() => toggleLogForm(exercise.id, exercise)} className="px-4 py-1.5 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg text-sm transition-colors">Cancel</button>
                                             </div>
                                         </div>
                                     )}
 
-                                    {/* Recent logs */}
                                     {logs.length > 0 && (
                                         <div className="mb-4">
                                             <div className="flex items-center gap-2 mb-2">
@@ -423,7 +571,6 @@ const WorkoutDetailPage = () => {
                                         </div>
                                     )}
 
-                                    {/* Progress chart */}
                                     <button onClick={() => toggleChart(exercise.id)} className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-purple-300 transition-colors mb-4">
                                         <BarChart2 className="w-4 h-4" />
                                         {isChartOpen ? 'Hide Progress' : 'View Progress'}
@@ -449,7 +596,6 @@ const WorkoutDetailPage = () => {
                                         <p className="text-sm text-gray-600 mb-4 bg-white/5 rounded-lg px-3 py-2">Record at least 2 workouts to see a chart.</p>
                                     )}
 
-                                    {/* Actions */}
                                     <div className="flex items-center gap-2 pt-2 border-t border-white/5">
                                         <button
                                             onClick={() => toggleLogForm(exercise.id, exercise)}
