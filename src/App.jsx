@@ -7,7 +7,6 @@ import HomePage from './components/HomePage';
 import WorkoutsPage from './components/WorkoutsPage';
 import WorkoutDetailPage from './components/WorkoutDetailPage';
 import HistoryPage from './components/HistoryPage';
-import CalendarPage from './components/CalendarPage';
 import MeasurementsPage from './components/MeasurementsPage';
 import ErrorPage from './components/ErrorPage';
 import PublicRoute from './components/auth/PublicRoute';
@@ -16,66 +15,46 @@ import ForgetPassword from './components/auth/ForgetPassword';
 import ResetPassword from './components/auth/ResetPassword';
 import VerifyEmailPage from './components/auth/VerifyEmailPage';
 
+// New pages
+import TemplatesPage from './components/TemplatesPage';
+import TemplateBuilderPage from './components/TemplateBuilderPage';
+import ActiveWorkoutPage from './components/ActiveWorkoutPage';
+import ProgressPage from './components/ProgressPage';
+import ProfilePage from './components/ProfilePage';
+import ExerciseLibraryPage from './components/ExerciseLibraryPage';
+
 const router = createBrowserRouter([
-  {
-    path: '/login',
-    element: <PublicRoute><Login /></PublicRoute>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/forgot-password',
-    element: <PublicRoute><ForgetPassword /></PublicRoute>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/register',
-    element: <PublicRoute><Register /></PublicRoute>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/reset-password',
-    element: <ProtectedRoute><ResetPassword /></ProtectedRoute>
-  },
-  {
-    path: '/verify-email',
-    element: <VerifyEmailPage />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/Home',
-    element: <ProtectedRoute><HomePage /></ProtectedRoute>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/workouts',
-    element: <ProtectedRoute><WorkoutsPage /></ProtectedRoute>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/workouts/:workoutId',
-    element: <ProtectedRoute><WorkoutDetailPage /></ProtectedRoute>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/history',
-    element: <ProtectedRoute><HistoryPage /></ProtectedRoute>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/calendar',
-    element: <ProtectedRoute><CalendarPage /></ProtectedRoute>,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/measurements',
-    element: <ProtectedRoute><MeasurementsPage /></ProtectedRoute>,
-    errorElement: <ErrorPage />
-  },
-  // Legacy redirects
-  { path: '/folders', element: <Navigate to="/workouts" replace /> },
-  { path: '/folder', element: <Navigate to="/workouts" replace /> },
-  { path: '/', element: <Navigate to="/Home" replace /> },
-  { path: '*', element: <Navigate to="/Home" replace /> }
+  // ── Auth routes ──────────────────────────────────────────────────────────
+  { path: '/login',           element: <PublicRoute><Login /></PublicRoute>,                  errorElement: <ErrorPage /> },
+  { path: '/forgot-password', element: <PublicRoute><ForgetPassword /></PublicRoute>,          errorElement: <ErrorPage /> },
+  { path: '/register',        element: <PublicRoute><Register /></PublicRoute>,                errorElement: <ErrorPage /> },
+  { path: '/reset-password',  element: <ProtectedRoute><ResetPassword /></ProtectedRoute> },
+  { path: '/verify-email',    element: <VerifyEmailPage />,                                   errorElement: <ErrorPage /> },
+
+  // ── Main pages ───────────────────────────────────────────────────────────
+  { path: '/Home',            element: <ProtectedRoute><HomePage /></ProtectedRoute>,          errorElement: <ErrorPage /> },
+  { path: '/history',         element: <ProtectedRoute><HistoryPage /></ProtectedRoute>,       errorElement: <ErrorPage /> },
+
+  // ── New pages ────────────────────────────────────────────────────────────
+  { path: '/templates',       element: <ProtectedRoute><TemplatesPage /></ProtectedRoute>,     errorElement: <ErrorPage /> },
+  { path: '/templates/new',   element: <ProtectedRoute><TemplateBuilderPage /></ProtectedRoute>,errorElement: <ErrorPage /> },
+  { path: '/templates/:templateId', element: <ProtectedRoute><TemplateBuilderPage /></ProtectedRoute>, errorElement: <ErrorPage /> },
+  { path: '/workout/active',  element: <ProtectedRoute><ActiveWorkoutPage /></ProtectedRoute>, errorElement: <ErrorPage /> },
+  { path: '/progress',        element: <ProtectedRoute><ProgressPage /></ProtectedRoute>,      errorElement: <ErrorPage /> },
+  { path: '/profile',         element: <ProtectedRoute><ProfilePage /></ProtectedRoute>,       errorElement: <ErrorPage /> },
+  { path: '/library',         element: <ProtectedRoute><ExerciseLibraryPage /></ProtectedRoute>,errorElement: <ErrorPage /> },
+
+  // ── Legacy routes (kept for backward compat) ─────────────────────────────
+  { path: '/workouts',        element: <ProtectedRoute><WorkoutsPage /></ProtectedRoute>,      errorElement: <ErrorPage /> },
+  { path: '/workouts/:workoutId', element: <ProtectedRoute><WorkoutDetailPage /></ProtectedRoute>, errorElement: <ErrorPage /> },
+  { path: '/measurements',    element: <ProtectedRoute><MeasurementsPage /></ProtectedRoute>,  errorElement: <ErrorPage /> },
+  { path: '/calendar',        element: <Navigate to="/history" replace /> },
+
+  // ── Redirects ─────────────────────────────────────────────────────────────
+  { path: '/folders', element: <Navigate to="/templates" replace /> },
+  { path: '/folder',  element: <Navigate to="/templates" replace /> },
+  { path: '/',        element: <Navigate to="/Home" replace /> },
+  { path: '*',        element: <Navigate to="/Home" replace /> },
 ]);
 
 const App = () => (
