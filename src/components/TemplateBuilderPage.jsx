@@ -6,22 +6,22 @@ import Navbar from './Navbar';
 import { EXERCISES, MUSCLE_GROUP_LABELS, MUSCLE_GROUP_COLORS } from '../lib/exerciseData';
 
 const WORKOUT_TYPES = ['gym', 'hiit', 'machine', 'equipment', 'beginner', 'intermediate', 'pro', 'yoga'];
-const DIFFICULTIES  = ['beginner', 'intermediate', 'advanced'];
+const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
 
 function ExercisePickerModal({ onSelect, onClose }) {
-  const [search,      setSearch]      = useState('');
+  const [search, setSearch] = useState('');
   const [muscleGroup, setMuscleGroup] = useState('');
-  const [customExs,   setCustomExs]   = useState([]);
+  const [customExs, setCustomExs] = useState([]);
 
   useEffect(() => {
     axios.get('/exercise-library/', { params: { search: search || undefined, muscle_group: muscleGroup || undefined } })
       .then(r => setCustomExs(r.data.filter(e => e.is_custom)))
-      .catch(() => {});
+      .catch(() => { });
   }, [search, muscleGroup]);
 
   const filtered = EXERCISES.filter(e => {
     const matchSearch = !search || e.name.toLowerCase().includes(search.toLowerCase());
-    const matchGroup  = !muscleGroup || e.muscle_group === muscleGroup;
+    const matchGroup = !muscleGroup || e.muscle_group === muscleGroup;
     return matchSearch && matchGroup;
   });
 
@@ -91,7 +91,7 @@ function ExercisePickerModal({ onSelect, onClose }) {
                     {MUSCLE_GROUP_LABELS[ex.muscle_group] || ex.muscle_group}
                   </span>
                   <span className="text-white text-sm flex-1 truncate">{ex.name}</span>
-                  <span className="text-gray-600 text-xs flex-shrink-0 capitalize">{ex.equipment?.replace('_',' ')}</span>
+                  <span className="text-gray-600 text-xs flex-shrink-0 capitalize">{ex.equipment?.replace('_', ' ')}</span>
                 </button>
               ))}
             </div>
@@ -105,16 +105,16 @@ function ExercisePickerModal({ onSelect, onClose }) {
 export default function TemplateBuilderPage() {
   const { templateId } = useParams();
   const navigate = useNavigate();
-  const isEdit   = Boolean(templateId);
+  const isEdit = Boolean(templateId);
 
-  const [name,        setName]        = useState('');
+  const [name, setName] = useState('');
   const [workoutType, setWorkoutType] = useState('gym');
-  const [difficulty,  setDifficulty]  = useState('intermediate');
-  const [duration,    setDuration]    = useState(45);
-  const [exercises,   setExercises]   = useState([]);
-  const [showPicker,  setShowPicker]  = useState(false);
-  const [saving,      setSaving]      = useState(false);
-  const [loading,     setLoading]     = useState(isEdit);
+  const [difficulty, setDifficulty] = useState('intermediate');
+  const [duration, setDuration] = useState(45);
+  const [exercises, setExercises] = useState([]);
+  const [showPicker, setShowPicker] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -132,13 +132,13 @@ export default function TemplateBuilderPage() {
     setShowPicker(false);
     const newEx = {
       exercise_library_id: ex.id,
-      exercise_name:       ex.name,
-      order_index:         exercises.length,
-      target_sets:         3,
-      target_reps:         10,
-      target_weight_kg:    0,
-      rest_seconds:        90,
-      _local_id:           Date.now(),
+      exercise_name: ex.name,
+      order_index: exercises.length,
+      target_sets: 3,
+      target_reps: 10,
+      target_weight_kg: 0,
+      rest_seconds: 90,
+      _local_id: Date.now(),
     };
     setExercises(prev => [...prev, newEx]);
   };
@@ -173,24 +173,24 @@ export default function TemplateBuilderPage() {
       if (isEdit) {
         const { data: existing } = await axios.get(`/templates/${tmplId}/`);
         await Promise.all((existing.exercises || []).map(ex =>
-          axios.delete(`/templates/${tmplId}/exercises/${ex.id}/`).catch(() => {})
+          axios.delete(`/templates/${tmplId}/exercises/${ex.id}/`).catch(() => { })
         ));
       }
       await Promise.all(exercises.map((ex, idx) =>
         axios.post(`/templates/${tmplId}/exercises/`, {
           exercise_library_id: ex.exercise_library_id,
-          exercise_name:       ex.exercise_name,
-          order_index:         idx,
-          target_sets:         parseInt(ex.target_sets) || 3,
-          target_reps:         parseInt(ex.target_reps) || 10,
-          target_weight_kg:    parseFloat(ex.target_weight_kg) || 0,
-          rest_seconds:        parseInt(ex.rest_seconds) || 90,
+          exercise_name: ex.exercise_name,
+          order_index: idx,
+          target_sets: parseInt(ex.target_sets) || 3,
+          target_reps: parseInt(ex.target_reps) || 10,
+          target_weight_kg: parseFloat(ex.target_weight_kg) || 0,
+          rest_seconds: parseInt(ex.rest_seconds) || 90,
         })
       ));
 
       navigate('/templates');
     } catch (e) {
-      console.error(e);
+      console.error('Save failed:', e.response?.data ?? e);
       alert('Failed to save template');
     } finally {
       setSaving(false);
@@ -290,10 +290,10 @@ export default function TemplateBuilderPage() {
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       {[
-                        { label: 'Sets',  field: 'target_sets',      type: 'number' },
-                        { label: 'Reps',  field: 'target_reps',      type: 'number' },
-                        { label: 'kg',    field: 'target_weight_kg', type: 'number' },
-                        { label: 'Rest s',field: 'rest_seconds',     type: 'number' },
+                        { label: 'Sets', field: 'target_sets', type: 'number' },
+                        { label: 'Reps', field: 'target_reps', type: 'number' },
+                        { label: 'kg', field: 'target_weight_kg', type: 'number' },
+                        { label: 'Rest s', field: 'rest_seconds', type: 'number' },
                       ].map(({ label, field, type }) => (
                         <div key={field}>
                           <label className="text-[10px] text-gray-500 block mb-1">{label}</label>
