@@ -21,6 +21,7 @@ const CalendarPage = () => {
         fetchFolders();
     }, []);
 
+
     const fetchWorkoutLogs = async () => {
         try {
             const res = await axios.get('/workout-logs/');

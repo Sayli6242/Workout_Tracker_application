@@ -9,7 +9,7 @@ export default function ForgotPassword() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const { supabase } = useAuth();
+    const { pb } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -18,11 +18,9 @@ export default function ForgotPassword() {
             setMessage('');
             setLoading(true);
 
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`,
-            });
+            await pb.collection('users').requestPasswordReset(email);
 
-            if (error) throw error;
+
 
             setMessage('Check your email for the password reset link');
         } catch (error) {
