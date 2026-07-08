@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
             await pb.collection('users').requestVerification(email);
             return { needsVerification: true };
         } catch (error) {
-            console.error('PocketBase create error:', JSON.stringify(error?.data, null, 2));
+            console.error('PocketBase create error:', error?.status, error?.data);
             if (error?.data?.data) {
                 const fieldErrors = Object.values(error.data.data)
                     .map(e => e.message)
