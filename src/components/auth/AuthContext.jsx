@@ -90,9 +90,13 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     }, []);
 
-    const signUp = async (email, password) => {
+    const signUp = async (email, password, username = '') => {
         try {
+            const generatedUsername = email.split('@')[0] + Math.random().toString(36).slice(2, 6);
+            const finalUsername = username.trim() || generatedUsername;
             await pb.collection('users').create({
+                username: finalUsername,
+                name: username.trim() || email.split('@')[0],
                 email,
                 password,
                 passwordConfirm: password
@@ -101,6 +105,13 @@ export const AuthProvider = ({ children }) => {
             await pb.collection('users').requestVerification(email);
             return { needsVerification: true };
         } catch (error) {
+            console.error('PocketBase create error:', JSON.stringify(error?.data, null, 2));
+            if (error?.data?.data) {
+                const fieldErrors = Object.values(error.data.data)
+                    .map(e => e.message)
+                    .join(' | ');
+                throw new Error(fieldErrors || error.message);
+            }
             throw error;
         }
     };

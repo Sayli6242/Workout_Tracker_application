@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Link } from 'react-router-dom';
-import { LockKeyhole, Mail, UserPlus, MailCheck } from 'lucide-react';
+import { LockKeyhole, Mail, UserPlus, MailCheck, User } from 'lucide-react';
 
 export default function Register() {
     const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
@@ -15,10 +16,11 @@ export default function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (password !== confirmPassword) return setError('Passwords do not match');
+        if (password.length < 8) return setError('Password must be at least 8 characters');
         try {
             setError('');
             setLoading(true);
-            await signUp(email, password);
+            await signUp(email, password, username);
             setSent(true);
         } catch (error) {
             setError(error.message);
@@ -91,9 +93,17 @@ export default function Register() {
                         </div>
                         <div className="relative">
                             <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-500">
+                                <User size={18} />
+                            </span>
+                            <input type="text" placeholder="Username (optional)" value={username}
+                                onChange={(e) => setUsername(e.target.value)} disabled={loading}
+                                className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
+                        </div>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-500">
                                 <LockKeyhole size={18} />
                             </span>
-                            <input type="password" required placeholder="Password" value={password}
+                            <input type="password" required placeholder="Password" value={password} minLength={8}
                                 onChange={(e) => setPassword(e.target.value)} disabled={loading}
                                 className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30" />
                         </div>
