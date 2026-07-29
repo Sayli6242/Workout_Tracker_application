@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { MailCheck, XCircle, Loader } from 'lucide-react';
-import { pb } from '../../../src/lib/pocketBase';
+import { supabase } from '../../lib/auth';
 
 export default function VerifyEmailPage() {
     const [searchParams] = useSearchParams();
@@ -9,18 +9,42 @@ export default function VerifyEmailPage() {
     const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
-        const token = searchParams.get('token');
-        if (!token) {
-            setStatus('error');
-            setErrorMsg('No verification token found in the URL.');
+        // Case 1: PKCE flow — token_hash in query params (?token_hash=xxx&type=email)
+        const token_hash = searchParams.get('token_hash');
+        const type = searchParams.get('type') || 'email';
+
+        if (token_hash) {
+            supabase.auth.verifyOtp({ token_hash, type })
+                .then(({ error }) => {
+                    if (error) throw error;
+                    setStatus('success');
+                })
+                .catch(err => {
+                    setStatus('error');
+                    setErrorMsg(err.message || 'Verification failed. The link may have expired.');
+                });
             return;
         }
-        pb.collection('users').confirmVerification(token)
-            .then(() => setStatus('success'))
-            .catch(err => {
+
+        // Case 2: Implicit flow — tokens in URL hash (#access_token=xxx&type=signup)
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            const hashParams = new URLSearchParams(hash);
+            if (hashParams.get('error')) {
                 setStatus('error');
-                setErrorMsg(err.message || 'Verification failed. The link may have expired.');
-            });
+                setErrorMsg(hashParams.get('error_description') || 'Verification failed.');
+                return;
+            }
+            if (hashParams.get('access_token')) {
+                // Supabase already verified the email and signed the user in
+                setStatus('success');
+                return;
+            }
+        }
+
+        // No token found
+        setStatus('error');
+        setErrorMsg('No verification token found. Please click the link from your email again.');
     }, []);
 
     return (

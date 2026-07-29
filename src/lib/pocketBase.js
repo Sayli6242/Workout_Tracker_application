@@ -6,6 +6,6 @@
 
 // export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-import PocketBase from 'pocketbase';
-export const pb = new PocketBase('http://localhost:8090');
-export default pb;
+// import PocketBase from 'pocketbase';
+// export const pb = new PocketBase('https://workout-tracker-pb.fly.dev');
+// export default pb;

@@ -1,148 +1,73 @@
-// import { createContext, useContext, useEffect, useState } from 'react';
-// import { supabase } from '../../lib/supabase'
-// const AuthContext = createContext({});
-
-// export const AuthProvider = ({ children }) => {
-//     const [user, setUser] = useState(null);
-//     const [session, setSession] = useState(null);
-//     const [loading, setLoading] = useState(true);
-
-//     useEffect(() => {
-//         // Check active sessions and sets the user
-//         supabase.auth.getSession().then(({ data: { session } }) => {
-//             setSession(session);
-//             setUser(session?.user ?? null);
-//             setLoading(false);
-//         });
-
-//         // Listen for changes on auth state
-//         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-//             setSession(session);
-//             setUser(session?.user ?? null);
-//         });
-
-//         return () => subscription.unsubscribe();
-//     }, []);
-
-//     const signUp = async (email, password) => {
-//         const { data, error } = await supabase.auth.signUp({
-//             email,
-//             password
-//         });
-//         if (error) throw error;
-//         return data;
-//     };
-
-
-
-//     const signIn = async (email, password) => {
-//         const { data, error } = await supabase.auth.signInWithPassword({
-//             email,
-//             password,
-//         });
-//         if (error) throw error;
-//         return data;
-//     };
-
-//     const signOut = () => {
-//         return supabase.auth.signOut();
-//     };
-
-//     // Helper function to get the access token
-//     const getAccessToken = () => {
-//         return session?.access_token;
-//     };
-
-//     return (
-//         <AuthContext.Provider value={{
-//             user,
-//             signUp,
-//             signIn,
-//             signOut,
-//             getAccessToken, // Expose the getAccessToken function
-//             isAuthenticated: !!user,
-//             supabase
-
-
-//         }}>
-//             {!loading && children}
-//         </AuthContext.Provider>
-//     );
-// };
-
-// export const useAuth = () => {
-//     return useContext(AuthContext);
-// };
-import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { pb } from '../../../src/lib/pocketBase';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../../lib/auth';
 
 const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Check initial auth state
     useEffect(() => {
-        if (pb.authStore.isValid) {
-            setUser(pb.authStore.model);
-        }
-        setLoading(false);
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
     const signUp = async (email, password, username = '') => {
-        try {
-            const generatedUsername = email.split('@')[0] + Math.random().toString(36).slice(2, 6);
-            const finalUsername = username.trim() || generatedUsername;
-            await pb.collection('users').create({
-                username: finalUsername,
-                name: username.trim() || email.split('@')[0],
-                email,
-                password,
-                passwordConfirm: password
-            });
-            // Send verification email — do NOT sign in yet
-            await pb.collection('users').requestVerification(email);
-            return { needsVerification: true };
-        } catch (error) {
-            console.error('PocketBase create error:', error?.status, error?.data);
-            if (error?.data?.data) {
-                const fieldErrors = Object.values(error.data.data)
-                    .map(e => e.message)
-                    .join(' | ');
-                throw new Error(fieldErrors || error.message);
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                emailRedirectTo: `${window.location.origin}/verify-email`,
+                data: {
+                    username: username.trim() || email.split('@')[0],
+                    name: username.trim() || email.split('@')[0],
+                }
             }
-            throw error;
-        }
+        });
+        if (error) throw error;
+        return { needsVerification: true };
     };
 
     const resendVerification = async (email) => {
-        await pb.collection('users').requestVerification(email);
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email,
+            options: { emailRedirectTo: `${window.location.origin}/verify-email` },
+        });
+        if (error) throw error;
     };
 
     const signIn = async (email, password) => {
-        try {
-            const data = await pb.collection('users').authWithPassword(email, password);
-            setUser(data.record);
-            return data;
-        } catch (error) {
-            throw error;
-        }
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        return data;
     };
 
     const signOut = async () => {
-        pb.authStore.clear();
+        await supabase.auth.signOut();
         setUser(null);
     };
 
     const value = {
         user,
+        session,
         signUp,
         signIn,
         signOut,
         resendVerification,
-        pb,
-        loading
+        supabase,
+        loading,
     };
 
     return (
