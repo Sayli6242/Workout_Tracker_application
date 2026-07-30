@@ -1,6 +1,6 @@
 // ResetPassword.jsx
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { authStyles } from './styles/constants';
 
@@ -9,39 +9,37 @@ export default function ResetPassword() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [ready, setReady] = useState(false);
     const { supabase } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
 
     useEffect(() => {
-        const handlePasswordResetToken = async () => {
-            try {
-                // Get the hash or search params from URL
-                const params = new URLSearchParams(location.hash.replace('#', '') || location.search);
-                const accessToken = params.get('access_token');
+        let done = false;
 
-                if (!accessToken) {
-                    throw new Error('No reset token found');
-                }
+        // Supabase v2 fires PASSWORD_RECOVERY after processing the reset link code
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (done) return;
+            if (event === 'PASSWORD_RECOVERY' && session) {
+                done = true;
+                setReady(true);
+            }
+        });
 
-                // Set the session with the access token
-                const { error: sessionError } = await supabase.auth.setSession({
-                    access_token: accessToken,
-                    refresh_token: null
-                });
-
-                if (sessionError) throw sessionError;
-
-            } catch (error) {
-                console.error('Reset token error:', error);
-                navigate('/login', {
-                    state: { error: 'Invalid password reset link. Please try again.' }
+        // Fallback: if no PASSWORD_RECOVERY fires within 8s, link is invalid/expired
+        const timer = setTimeout(() => {
+            if (!done) {
+                done = true;
+                navigate('/forgot-password', {
+                    state: { error: 'Reset link expired or invalid. Please request a new one.' }
                 });
             }
-        };
+        }, 8000);
 
-        handlePasswordResetToken();
-    }, [location, navigate, supabase.auth]);
+        return () => {
+            clearTimeout(timer);
+            subscription.unsubscribe();
+        };
+    }, [supabase.auth, navigate]);
 
     const handleResetPassword = async (e) => {
         e.preventDefault();
@@ -93,6 +91,15 @@ export default function ResetPassword() {
             setLoading(false);
         }
     };
+
+    if (!ready) return (
+        <div className="min-h-screen bg-gradient-to-tr from-rose-50 to-white flex items-center justify-center p-4">
+            <div className="text-center">
+                <div className="w-10 h-10 border-4 border-rose-300 border-t-rose-500 rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-rose-800/60">Verifying reset link…</p>
+            </div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gradient-to-tr from-rose-50 to-white flex items-center justify-center p-4">

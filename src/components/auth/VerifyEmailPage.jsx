@@ -1,18 +1,31 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { MailCheck, XCircle, Loader } from 'lucide-react';
 import { supabase } from '../../lib/auth';
 
 export default function VerifyEmailPage() {
-    const [searchParams] = useSearchParams();
     const [status, setStatus] = useState('loading'); // loading | success | error
     const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
-        // Case 1: PKCE flow — token_hash in query params (?token_hash=xxx&type=email)
-        const token_hash = searchParams.get('token_hash');
-        const type = searchParams.get('type') || 'email';
+        // Capture URL synchronously before Supabase may clear it
+        const params = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
+        const token_hash = params.get('token_hash');
+        const type = params.get('type') || 'email';
+        const code = params.get('code');
+        const hasAccessToken = hashParams.get('access_token');
+        const errorInHash = hashParams.get('error');
+
+        // Case A: Supabase passed an error in the hash
+        if (errorInHash) {
+            setStatus('error');
+            setErrorMsg(hashParams.get('error_description') || 'Verification failed.');
+            return;
+        }
+
+        // Case B: token_hash in query params — call verifyOtp directly
         if (token_hash) {
             supabase.auth.verifyOtp({ token_hash, type })
                 .then(({ error }) => {
@@ -26,23 +39,34 @@ export default function VerifyEmailPage() {
             return;
         }
 
-        // Case 2: Implicit flow — tokens in URL hash (#access_token=xxx&type=signup)
-        const hash = window.location.hash.substring(1);
-        if (hash) {
-            const hashParams = new URLSearchParams(hash);
-            if (hashParams.get('error')) {
-                setStatus('error');
-                setErrorMsg(hashParams.get('error_description') || 'Verification failed.');
-                return;
-            }
-            if (hashParams.get('access_token')) {
-                // Supabase already verified the email and signed the user in
-                setStatus('success');
-                return;
-            }
+        // Case C: PKCE code or implicit access_token
+        // Supabase processes these automatically — listen for the SIGNED_IN event it fires
+        if (code || hasAccessToken) {
+            let done = false;
+
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+                if (done) return;
+                if (event === 'SIGNED_IN' && session) {
+                    done = true;
+                    setStatus('success');
+                }
+            });
+
+            const timer = setTimeout(() => {
+                if (!done) {
+                    done = true;
+                    setStatus('error');
+                    setErrorMsg('Verification timed out. The link may have expired.');
+                }
+            }, 10000);
+
+            return () => {
+                clearTimeout(timer);
+                subscription.unsubscribe();
+            };
         }
 
-        // No token found
+        // Case D: No token at all
         setStatus('error');
         setErrorMsg('No verification token found. Please click the link from your email again.');
     }, []);

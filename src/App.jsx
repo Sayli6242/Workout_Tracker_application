@@ -28,7 +28,7 @@ const router = createBrowserRouter([
   { path: '/login',           element: <PublicRoute><Login /></PublicRoute>,                  errorElement: <ErrorPage /> },
   { path: '/forgot-password', element: <PublicRoute><ForgetPassword /></PublicRoute>,          errorElement: <ErrorPage /> },
   { path: '/register',        element: <PublicRoute><Register /></PublicRoute>,                errorElement: <ErrorPage /> },
-  { path: '/reset-password',  element: <ProtectedRoute><ResetPassword /></ProtectedRoute> },
+  { path: '/reset-password',  element: <ResetPassword />,                                  errorElement: <ErrorPage /> },
   { path: '/verify-email',    element: <VerifyEmailPage />,                                   errorElement: <ErrorPage /> },
 
   // ── Main pages ───────────────────────────────────────────────────────────
