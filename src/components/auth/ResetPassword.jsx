@@ -10,36 +10,28 @@ export default function ResetPassword() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [ready, setReady] = useState(false);
-    const { supabase } = useAuth();
+    const { supabase, isPasswordRecovery } = useAuth();
     const navigate = useNavigate();
 
+    // AuthContext captures PASSWORD_RECOVERY before this component mounts.
+    // React to it here — works whether it fired before or after mount.
     useEffect(() => {
-        let done = false;
+        if (isPasswordRecovery) {
+            setReady(true);
+        }
+    }, [isPasswordRecovery]);
 
-        // Supabase v2 fires PASSWORD_RECOVERY after processing the reset link code
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (done) return;
-            if (event === 'PASSWORD_RECOVERY' && session) {
-                done = true;
-                setReady(true);
-            }
-        });
-
-        // Fallback: if no PASSWORD_RECOVERY fires within 8s, link is invalid/expired
+    // Timeout fallback: if ready never becomes true, the link is invalid/expired.
+    // Cleans up automatically if ready becomes true before 8s.
+    useEffect(() => {
+        if (ready) return;
         const timer = setTimeout(() => {
-            if (!done) {
-                done = true;
-                navigate('/forgot-password', {
-                    state: { error: 'Reset link expired or invalid. Please request a new one.' }
-                });
-            }
+            navigate('/forgot-password', {
+                state: { error: 'Reset link expired or invalid. Please request a new one.' }
+            });
         }, 8000);
-
-        return () => {
-            clearTimeout(timer);
-            subscription.unsubscribe();
-        };
-    }, [supabase.auth, navigate]);
+        return () => clearTimeout(timer);
+    }, [ready, navigate]);
 
     const handleResetPassword = async (e) => {
         e.preventDefault();
