@@ -232,7 +232,7 @@ export default function TemplateBuilderPage() {
                   placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
               />
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div>
                 <label className="text-xs text-gray-400 font-medium mb-1 block">Type</label>
                 <select value={workoutType} onChange={e => setWorkoutType(e.target.value)}
@@ -249,11 +249,19 @@ export default function TemplateBuilderPage() {
                   {DIFFICULTIES.map(d => <option key={d} value={d} className="bg-[#13131f]">{d}</option>)}
                 </select>
               </div>
-              <div>
+              <div className="col-span-2 sm:col-span-1">
                 <label className="text-xs text-gray-400 font-medium mb-1 block">Duration (min)</label>
-                <input type="number" value={duration} onChange={e => setDuration(parseInt(e.target.value) || 45)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm
-                    focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => setDuration(d => Math.max(5, d - 5))}
+                    className="w-9 h-9 flex-shrink-0 rounded-lg bg-white/5 border border-white/10 text-white text-lg
+                      hover:bg-white/10 transition-colors flex items-center justify-center">−</button>
+                  <input type="number" value={duration} onChange={e => setDuration(parseInt(e.target.value) || 45)}
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm
+                      text-center focus:outline-none focus:ring-1 focus:ring-purple-500" />
+                  <button type="button" onClick={() => setDuration(d => d + 5)}
+                    className="w-9 h-9 flex-shrink-0 rounded-lg bg-white/5 border border-white/10 text-white text-lg
+                      hover:bg-white/10 transition-colors flex items-center justify-center">+</button>
+                </div>
               </div>
             </div>
           </div>
